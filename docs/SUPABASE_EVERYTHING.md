@@ -2,7 +2,8 @@
 
 هذا الملف يلخّص **كل ما يخص** ربط **Supabase (Docker الرسمي)** بمشروع **Deal Car Rental / BookCars**: المنافذ، المتغيرات، الأوامر، التدفقات، استكشاف الأخطاء، وما يبقى يدويًا.
 
-للنشر العام وقوائم مختصرة انظر أيضًا: [DEPLOYMENT.md](DEPLOYMENT.md).
+للنشر العام وقوائم مختصرة انظر أيضًا: [DEPLOYMENT.md](DEPLOYMENT.md).  
+**VPS (Hostinger + Traefik)** — الملفات التي تعدّلها والأوامر بالترتيب: [deploy/hostinger/README.md](../deploy/hostinger/README.md).
 
 ---
 
@@ -54,6 +55,7 @@
 | `backend/.env.docker` | `BC_SUPABASE_JWT_SECRET` = **`JWT_SECRET`** (ليس service role) |
 | `frontend/.env.docker` | `VITE_BC_SUPABASE_URL`, `VITE_BC_SUPABASE_ANON_KEY` |
 | `mobile/.env` | `BC_SUPABASE_URL`, `BC_SUPABASE_ANON_KEY` |
+| `deploy/hostinger/.env` + `secrets/backend.env` | للإنتاج على VPS مع Traefik: FQDNs، `SUPABASE_PUBLIC_URL` / `SUPABASE_ANON_KEY`، و`BC_SUPABASE_JWT_SECRET` يطابق `JWT_SECRET` — انظر [deploy/hostinger/README.md](../deploy/hostinger/README.md) |
 
 **قوالب:** `*.env.example`, `mobile/.env.docker.android.example`, **`mobile/.env.physical-device.example`** (هاتف حقيقي + `192.168.x.x`).
 
@@ -70,6 +72,8 @@
 | `npm run docker:down` | إيقاف المكدس الموحّد |
 | `npm run docker:up:bookcars-only` | BookCars فقط بدون Supabase |
 | `npm run docker:up:supabase` / `docker:down:supabase` | نفس `docker:up` / `docker:down` (توافق مع الوثائق السابقة) |
+| `npm run docker:up:hostinger` | على VPS مع Traefik: المكدس الموحّد (BookCars + Supabase) + تسميات التوجيه؛ يتطلب `deploy/hostinger/.env` و`secrets/backend.env` و`supabase/docker/.env` — التفاصيل في [deploy/hostinger/README.md](../deploy/hostinger/README.md) |
+| `npm run docker:down:hostinger` | إيقاف المكدس أعلاه |
 | `npm run supabase:merge-gotrue` | يحدّث `SITE_URL` و`ADDITIONAL_REDIRECT_URLS`؛ يدمج منافذ `supabase-bookcars-stack.fragment.env`؛ يعدّل مسارات `./volumes/` في `supabase/docker/docker-compose.yml` إلى `./supabase/docker/volumes/` لدمج Compose من جذر المستودع؛ على Windows يطبّع **LF** لـ `kong-entrypoint.sh` و`pooler.exs` |
 | `npm run supabase:merge-gotrue:fix-lf` | نفس الدمج + فرض تطبيع LF على أي نظام |
 | `npm run supabase:sync-bookcars` | يزامن `JWT_SECRET`, `ANON_KEY`, `SUPABASE_PUBLIC_URL` → `backend/.env.docker`, `frontend/.env.docker`, `mobile/.env` |
