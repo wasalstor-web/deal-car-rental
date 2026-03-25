@@ -277,9 +277,9 @@ export const checkout = async (req: Request, res: Response) => {
     }
 
     if (!body.payLater) {
-      const { payPal, paymentIntentId, sessionId } = body
+      const { payPal, paymentIntentId, sessionId, myFatoorah } = body
 
-      if (!payPal && !paymentIntentId && !sessionId) {
+      if (!payPal && !paymentIntentId && !sessionId && !myFatoorah) {
         throw new Error('paymentIntentId and sessionId not found')
       }
 

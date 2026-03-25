@@ -130,6 +130,14 @@ div.footer section.payment div.payment-text {
   }
 }
 
+div.footer section.payment .payment-myfatoorah {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  align-self: center;
+  padding: 4px 0;
+}
+
 div.footer section.copyright {
   width: 100%;
   padding: 15px 0 15px;

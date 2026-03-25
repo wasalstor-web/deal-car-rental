@@ -60,10 +60,13 @@ const CURRENCIES: Currency[] = [
 ]
 
 const getPaymentGateway = () => {
-  const paymentGateway = String(import.meta.env.VITE_BC_PAYMENT_GATEWAY || 'stripe').toUpperCase()
+  const paymentGateway = String(import.meta.env.VITE_BC_PAYMENT_GATEWAY || 'stripe').toUpperCase().replace(/[\s-]/g, '')
 
   if (paymentGateway === 'PAYPAL') {
     return bookcarsTypes.PaymentGateway.PayPal
+  }
+  if (paymentGateway === 'MYFATOORAH') {
+    return bookcarsTypes.PaymentGateway.MyFatoorah
   }
 
   // Default is Stripe

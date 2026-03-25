@@ -79,6 +79,7 @@ export enum RecordType {
 export enum PaymentGateway {
   PayPal = 'payPal',
   Stripe = 'stripe',
+  MyFatoorah = 'myfatoorah',
 }
 
 export interface Booking {
@@ -107,6 +108,7 @@ export interface Booking {
   isDeposit?: boolean
   isPayedInFull?: boolean
   paypalOrderId?: string
+  myFatoorahPaymentId?: string
 }
 
 export interface CheckoutPayload {
@@ -118,6 +120,7 @@ export interface CheckoutPayload {
   paymentIntentId?: string
   customerId?: string
   payPal?: boolean
+  myFatoorah?: boolean
 }
 
 export interface Filter {
@@ -581,6 +584,17 @@ export interface CreatePayPalOrderPayload {
   currency: string
   name: string
   description: string
+}
+
+export interface CreateMyFatoorahPaymentPayload {
+  bookingId: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  customerEmail: string
+  customerName: string
+  language?: string
 }
 
 export interface PaymentResult {

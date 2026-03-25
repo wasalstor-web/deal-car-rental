@@ -390,6 +390,28 @@ export const PAYPAL_CLIENT_ID = __env__('BC_PAYPAL_CLIENT_ID', false, 'PAYPAL_CL
 export const PAYPAL_CLIENT_SECRET = __env__('BC_PAYPAL_CLIENT_SECRET', false, 'PAYPAL_CLIENT_SECRET')
 
 /**
+ * MyFatoorah API base URL (no trailing slash).
+ * Test: https://apitest.myfatoorah.com — Production examples: https://api-sa.myfatoorah.com (Saudi), https://api.myfatoorah.com (Kuwait).
+ *
+ * @type {string}
+ */
+export const MYFATOORAH_API_URL = helper.trimEnd(__env__('BC_MYFATOORAH_API_URL', false, 'https://apitest.myfatoorah.com'), '/')
+
+/**
+ * MyFatoorah API key (Bearer token from portal).
+ *
+ * @type {string}
+ */
+export const MYFATOORAH_API_KEY = __env__('BC_MYFATOORAH_API_KEY', false, '')
+
+/**
+ * Payment method id for ExecutePayment (from InitiatePayment in portal; often 1 or 2 — set per your MyFatoorah account).
+ *
+ * @type {number}
+ */
+export const MYFATOORAH_PAYMENT_METHOD_ID = Number.parseInt(__env__('BC_MYFATOORAH_PAYMENT_METHOD_ID', false, '1'), 10)
+
+/**
  * Booking expiration in seconds.
  * Bookings created from checkout with Stripe are temporary and are automatically deleted if the payment checkout session expires.
  *
@@ -632,6 +654,7 @@ export interface Booking extends Document {
   isDeposit: boolean
   isPayedInFull?: boolean
   paypalOrderId?: string
+  myFatoorahPaymentId?: string
 }
 
 /**

@@ -17,6 +17,7 @@ import userRoutes from './routes/userRoutes'
 import stripeRoutes from './routes/stripeRoutes'
 import countryRoutes from './routes/countryRoutes'
 import paypalRoutes from './routes/paypalRoutes'
+import myfatoorahRoutes from './routes/myfatoorahRoutes'
 import ipinfoRoutes from './routes/ipinfoRoutes'
 import bankDetailsRoutes from './routes/bankDetailsRoutes'
 import settingRoutes from './routes/settingRoutes'
@@ -61,6 +62,7 @@ app.use('/', userRoutes)
 app.use('/', stripeRoutes)
 app.use('/', countryRoutes)
 app.use('/', paypalRoutes)
+app.use('/', myfatoorahRoutes)
 app.use('/', ipinfoRoutes)
 app.use('/', bankDetailsRoutes)
 app.use('/', settingRoutes)

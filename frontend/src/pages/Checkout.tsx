@@ -48,6 +48,7 @@ import * as LocationService from '@/services/LocationService'
 import * as PaymentService from '@/services/PaymentService'
 import * as StripeService from '@/services/StripeService'
 import * as PayPalService from '@/services/PayPalService'
+import * as MyFatoorahService from '@/services/MyFatoorahService'
 import { useRecaptchaContext, RecaptchaContextType } from '@/context/RecaptchaContext'
 import Layout from '@/components/Layout'
 import Error from '@/components/Error'
@@ -109,6 +110,8 @@ const Checkout = () => {
   const [payPalLoaded, setPayPalLoaded] = useState(false)
   const [payPalInit, setPayPalInit] = useState(false)
   const [payPalProcessing, setPayPalProcessing] = useState(false)
+  const [myFatoorahAwaitingPayment, setMyFatoorahAwaitingPayment] = useState(false)
+  const [myFatoorahProcessing, setMyFatoorahProcessing] = useState(false)
 
   const birthDateRef = useRef<HTMLInputElement | null>(null)
   const additionalDriverBirthDateRef = useRef<HTMLInputElement | null>(null)
@@ -134,6 +137,7 @@ const Checkout = () => {
     clearErrors,
     setFocus,
     trigger,
+    getValues,
   } = useForm<FormFields>({
     resolver: zodResolver(schema),
     mode: 'onBlur',
@@ -281,7 +285,7 @@ const Checkout = () => {
           setClientSecret(res.clientSecret)
           _sessionId = res.sessionId
           _customerId = res.customerId
-        } else {
+        } else if (env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal) {
           setPayPalLoaded(true)
         }
       }
@@ -297,6 +301,7 @@ const Checkout = () => {
         sessionId: _sessionId,
         customerId: _customerId,
         payPal: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal,
+        myFatoorah: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah,
       }
 
       const { status, bookingId: _bookingId } = await BookingService.checkout(payload)
@@ -306,6 +311,9 @@ const Checkout = () => {
           setVisible(false)
           setSuccess(true)
         }
+        if (!payLater && env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah) {
+          setMyFatoorahAwaitingPayment(true)
+        }
         setBookingId(_bookingId)
         setSessionId(_sessionId)
       } else {
@@ -313,6 +321,43 @@ const Checkout = () => {
       }
     } catch (err) {
       helper.error(err)
+    }
+  }
+
+  const redirectToMyFatoorah = async () => {
+    if (!bookingId || !car || !pickupLocation || !dropOffLocation) {
+      return
+    }
+    try {
+      setMyFatoorahProcessing(true)
+      setPaymentFailed(false)
+      const name = bookcarsHelper.truncateString(car.name, PayPalService.ORDER_NAME_MAX_LENGTH)
+      const _description = `${car.name} - ${daysLabel} - ${pickupLocation._id === dropOffLocation._id ? pickupLocation.name : `${pickupLocation.name} - ${dropOffLocation.name}`}`
+      const description = bookcarsHelper.truncateString(_description, PayPalService.ORDER_DESCRIPTION_MAX_LENGTH)
+      let amount = price
+      if (payDeposit) {
+        amount = depositPrice
+      } else if (payInFull) {
+        amount = price + depositPrice
+      }
+      const customerEmail = (authenticated ? user?.email : getValues('email')) as string
+      const customerName = (authenticated ? user?.fullName : getValues('fullName')) as string
+      const { paymentUrl } = await MyFatoorahService.createPayment({
+        bookingId,
+        amount,
+        currency: PaymentService.getCurrency(),
+        name,
+        description,
+        customerEmail,
+        customerName,
+        language,
+      })
+      window.location.assign(paymentUrl)
+    } catch (err) {
+      helper.error(err)
+      setPaymentFailed(true)
+    } finally {
+      setMyFatoorahProcessing(false)
     }
   }
 
@@ -461,6 +506,7 @@ const Checkout = () => {
                       language={language}
                       clientSecret={clientSecret}
                       payPalLoaded={payPalLoaded}
+                      myFatoorahAwaitingPayment={myFatoorahAwaitingPayment}
                       onPriceChange={(value) => setPrice(value)}
                       onAdManuallyCheckedChange={(value) => setAdManuallyChecked(value)}
                       onCancellationChange={(value) => setValue('cancellation', value)}
@@ -687,7 +733,7 @@ const Checkout = () => {
                               setLicenseRequired(false)
                               setLicense(null)
                             }}
-                            hideDelete={!!clientSecret || payPalLoaded}
+                            hideDelete={!!clientSecret || payPalLoaded || myFatoorahAwaitingPayment}
                           />
                         </div>
                       </div>
@@ -805,8 +851,8 @@ const Checkout = () => {
                               <FormControlLabel
                                 value="payLater"
                                 control={<Radio />}
-                                disabled={!!clientSecret || payPalLoaded}
-                                className={clientSecret || payPalLoaded ? 'payment-radio-disabled' : ''}
+                                disabled={!!clientSecret || payPalLoaded || myFatoorahAwaitingPayment}
+                                className={clientSecret || payPalLoaded || myFatoorahAwaitingPayment ? 'payment-radio-disabled' : ''}
                                 label={(
                                   <span className="payment-button">
                                     <span>{strings.PAY_LATER}</span>
@@ -820,8 +866,8 @@ const Checkout = () => {
                                 <FormControlLabel
                                   value="payDeposit"
                                   control={<Radio />}
-                                  disabled={!!clientSecret || payPalLoaded}
-                                  className={clientSecret || payPalLoaded ? 'payment-radio-disabled' : ''}
+                                  disabled={!!clientSecret || payPalLoaded || myFatoorahAwaitingPayment}
+                                  className={clientSecret || payPalLoaded || myFatoorahAwaitingPayment ? 'payment-radio-disabled' : ''}
                                   label={(
                                     <span className="payment-button">
                                       <span>{strings.PAY_DEPOSIT}</span>
@@ -836,8 +882,8 @@ const Checkout = () => {
                                 <FormControlLabel
                                   value="payOnline"
                                   control={<Radio />}
-                                  disabled={!!clientSecret || payPalLoaded}
-                                  className={clientSecret || payPalLoaded ? 'payment-radio-disabled' : ''}
+                                  disabled={!!clientSecret || payPalLoaded || myFatoorahAwaitingPayment}
+                                  className={clientSecret || payPalLoaded || myFatoorahAwaitingPayment ? 'payment-radio-disabled' : ''}
                                   label={(
                                     <span className="payment-button">
                                       <span>{strings.PAY_ONLINE}</span>
@@ -850,8 +896,8 @@ const Checkout = () => {
                             <FormControlLabel
                               value="payInFull"
                               control={<Radio />}
-                              disabled={!!clientSecret || payPalLoaded}
-                              className={clientSecret || payPalLoaded ? 'payment-radio-disabled' : ''}
+                              disabled={!!clientSecret || payPalLoaded || myFatoorahAwaitingPayment}
+                              className={clientSecret || payPalLoaded || myFatoorahAwaitingPayment ? 'payment-radio-disabled' : ''}
                               label={(
                                 <span className="payment-button">
                                   <span>{strings.PAY_IN_FULL}</span>
@@ -920,7 +966,7 @@ const Checkout = () => {
                             </div>
                           )
                         )
-                        : payPalLoaded ? (
+                        : env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal && payPalLoaded ? (
                           <div className="payment-options-container">
                             <PayPalButtons
                               createOrder={async () => {
@@ -966,12 +1012,28 @@ const Checkout = () => {
                               }}
                             />
                           </div>
-                        ) : null
+                        )
+                        : env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah && myFatoorahAwaitingPayment && bookingId ? (
+                          <div className="payment-options-container">
+                            <Button
+                              type="button"
+                              variant="contained"
+                              fullWidth
+                              className="btn-checkout btn-margin-bottom"
+                              disabled={myFatoorahProcessing}
+                              onClick={redirectToMyFatoorah}
+                            >
+                              {myFatoorahProcessing ? <CircularProgress color="inherit" size={24} /> : strings.PAY_WITH_MYFATOORAH}
+                            </Button>
+                          </div>
+                        )
+                        : null
                     )}
                     <div className="checkout-buttons">
                       {(
                         (env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.Stripe && !clientSecret)
                         || (env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal && !payPalInit)
+                        || (env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah && !myFatoorahAwaitingPayment)
                         || payLater) && (
                           <Button
                             type="submit"
@@ -1044,6 +1106,7 @@ const Checkout = () => {
         )}
 
         {payPalProcessing && <Backdrop text={strings.CHECKING} />}
+        {myFatoorahProcessing && <Backdrop text={strings.CHECKING} />}
 
         <MapDialog
           pickupLocation={pickupLocation}

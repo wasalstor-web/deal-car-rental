@@ -18,8 +18,6 @@ import Stripe from '@/assets/img/stripe.png'
 import PayPal from '@/assets/img/paypal.png'
 import '@/assets/css/footer.css'
 
-const SecurePayment = env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.Stripe ? Stripe : PayPal
-
 const Footer = () => {
   const navigate = useNavigate()
   const language = UserService.getLanguage()
@@ -68,15 +66,25 @@ const Footer = () => {
       <section className="payment">
         <div
           className="payment-text"
-          style={{ margin: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? '0 20px' : '-25px 10px 0 0' }}
+          style={{
+            margin: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? '0 20px'
+              : env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah ? '0 12px'
+                : '-25px 10px 0 0',
+          }}
         >
           {strings.SECURE_PAYMENT}
         </div>
-        <img
-          src={SecurePayment}
-          alt={env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? strings.ALT_PAYMENT_PAYPAL : strings.ALT_PAYMENT_STRIPE}
-          style={{ height: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? 64 : 'auto' }}
-        />
+        {env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.MyFatoorah ? (
+          <span className="payment-myfatoorah" aria-label={strings.PAYMENT_MYFATOORAH}>
+            {strings.PAYMENT_MYFATOORAH}
+          </span>
+        ) : (
+          <img
+            src={env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? PayPal : Stripe}
+            alt={env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? strings.ALT_PAYMENT_PAYPAL : strings.ALT_PAYMENT_STRIPE}
+            style={{ height: env.PAYMENT_GATEWAY === bookcarsTypes.PaymentGateway.PayPal ? 64 : 'auto' }}
+          />
+        )}
       </section>
       <section className="copyright">
         <div className="copyright">

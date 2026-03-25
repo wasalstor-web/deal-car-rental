@@ -26,6 +26,7 @@ const strings = new LocalizedStrings({
     SOCIAL_INSTAGRAM: 'BookCars sur Instagram (nouvel onglet)',
     ALT_PAYMENT_STRIPE: 'Paiements sécurisés avec Stripe',
     ALT_PAYMENT_PAYPAL: 'Paiements sécurisés avec PayPal',
+    PAYMENT_MYFATOORAH: 'Paiements via MyFatoorah',
   },
   en: {
     COPYRIGHT_PART1,
@@ -48,6 +49,7 @@ const strings = new LocalizedStrings({
     SOCIAL_INSTAGRAM: 'BookCars on Instagram (opens in new tab)',
     ALT_PAYMENT_STRIPE: 'Secure payments with Stripe',
     ALT_PAYMENT_PAYPAL: 'Secure payments with PayPal',
+    PAYMENT_MYFATOORAH: 'Payments via MyFatoorah',
   },
   es: {
     COPYRIGHT_PART1,
@@ -70,6 +72,7 @@ const strings = new LocalizedStrings({
     SOCIAL_INSTAGRAM: 'BookCars en Instagram (se abre en nueva pestaña)',
     ALT_PAYMENT_STRIPE: 'Pagos seguros con Stripe',
     ALT_PAYMENT_PAYPAL: 'Pagos seguros con PayPal',
+    PAYMENT_MYFATOORAH: 'Pagos con MyFatoorah',
   },
   ar: {
     COPYRIGHT_PART1,
@@ -92,6 +95,7 @@ const strings = new LocalizedStrings({
     SOCIAL_INSTAGRAM: 'BookCars على إنستغرام (يفتح في تبويب جديد)',
     ALT_PAYMENT_STRIPE: 'دفع آمن عبر Stripe',
     ALT_PAYMENT_PAYPAL: 'دفع آمن عبر PayPal',
+    PAYMENT_MYFATOORAH: 'دفع عبر ماي فاتورة',
 
   },
 })
