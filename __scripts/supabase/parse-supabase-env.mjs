@@ -2,6 +2,7 @@
  * Shared helpers for supabase/docker/.env — used by sync / seed / verify scripts.
  */
 import fs from 'node:fs'
+import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 import { homedir } from 'node:os'
 
@@ -44,6 +45,6 @@ export function parseEnv(text) {
 
 export async function loadSupabaseEnv(dockerDir) {
   const envPath = path.join(dockerDir, '.env')
-  const raw = await fs.readFile(envPath, 'utf8')
+  const raw = await fsPromises.readFile(envPath, 'utf8')
   return { envPath, env: parseEnv(raw) }
 }

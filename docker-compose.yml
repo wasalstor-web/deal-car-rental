@@ -3,7 +3,8 @@
 #
 # — عزل عن مشاريع Docker أخرى على نفس السيرفر: شبكة bridge مخصّصة لكل مشروع Compose (بادئة اسم المشروع).
 # — تعارض المنافذ على المضيف: عرّف BOOKCARS_HOST_PORT_* في البيئة أو ملف .env بجانب هذا الملف.
-# — mongo-express: تشغيل اختياري — docker compose --profile devtools up -d
+# — التشغيل الافتراضي: npm run docker:up (BookCars + Supabase موحّد) — راجع supabase/README.md
+# — mongo-express: npm run docker:up:tools
 # — نشر Hostinger معزول + Traefik: deploy/hostinger/docker-compose.yml
 
 networks:

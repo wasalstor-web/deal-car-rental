@@ -24,7 +24,7 @@
 | API BookCars | `http://localhost:4002` |
 | لوحة الأدمن | `http://localhost:3001` |
 | Mongo على المضيف | `localhost:27018` |
-| **Supabase عبر Kong** | قيمة **`SUPABASE_PUBLIC_URL`** في `supabase/docker/.env`؛ مع المكدس الموحّد (`docker:up:supabase`) القالب يدمج **`http://localhost:8010`** من `infra/supabase-bookcars-stack.fragment.env` |
+| **Supabase عبر Kong** | قيمة **`SUPABASE_PUBLIC_URL`** في `supabase/docker/.env`؛ مع **`npm run docker:up`** القالب يدمج **`http://localhost:8010`** من `infra/supabase-bookcars-stack.fragment.env` |
 
 **قاعدة ذهبية:** `KONG_HTTP_PORT` و`SUPABASE_PUBLIC_URL` و`API_EXTERNAL_URL` يجب أن تتسق (نفس منفذ HTTP العام).  
 واجهة BookCars: `VITE_BC_SUPABASE_URL` = `SUPABASE_PUBLIC_URL`.  
@@ -66,9 +66,11 @@
 | الأمر | الوظيفة |
 |--------|---------|
 | `npm run supabase:clone-docker` | يستنسخ [Supabase docker الرسمي](https://github.com/supabase/supabase/tree/master/docker) إلى **`supabase/docker/`** (مستبعد من Git) ثم يشغّل دمج BookCars + LF |
-| `npm run docker:up:supabase` | `docker compose -p bookcars -f docker-compose.yml -f supabase/docker/docker-compose.yml up -d --build` |
-| `npm run docker:down:supabase` | إيقاف نفس المكدس |
-| `npm run supabase:merge-gotrue` | يحدّث `SITE_URL` و`ADDITIONAL_REDIRECT_URLS` لـ BookCars؛ يدمج منافذ `supabase-bookcars-stack.fragment.env`؛ على Windows يطبّع **LF** لـ `kong-entrypoint.sh` و`pooler.exs` |
+| `npm run docker:up` | المكدس الموحّد (يستنسخ `supabase/docker` عند الحاجة): `docker compose -p bookcars` + الملفان |
+| `npm run docker:down` | إيقاف المكدس الموحّد |
+| `npm run docker:up:bookcars-only` | BookCars فقط بدون Supabase |
+| `npm run docker:up:supabase` / `docker:down:supabase` | نفس `docker:up` / `docker:down` (توافق مع الوثائق السابقة) |
+| `npm run supabase:merge-gotrue` | يحدّث `SITE_URL` و`ADDITIONAL_REDIRECT_URLS`؛ يدمج منافذ `supabase-bookcars-stack.fragment.env`؛ يعدّل مسارات `./volumes/` في `supabase/docker/docker-compose.yml` إلى `./supabase/docker/volumes/` لدمج Compose من جذر المستودع؛ على Windows يطبّع **LF** لـ `kong-entrypoint.sh` و`pooler.exs` |
 | `npm run supabase:merge-gotrue:fix-lf` | نفس الدمج + فرض تطبيع LF على أي نظام |
 | `npm run supabase:sync-bookcars` | يزامن `JWT_SECRET`, `ANON_KEY`, `SUPABASE_PUBLIC_URL` → `backend/.env.docker`, `frontend/.env.docker`, `mobile/.env` |
 | `npm run supabase:verify-local` | يتحقق من `auth/v1/health` و`rest/v1/` عبر `SUPABASE_PUBLIC_URL` |
@@ -159,6 +161,7 @@ sequenceDiagram
 | الملف | الوظيفة |
 |--------|---------|
 | `__scripts/supabase/parse-supabase-env.mjs` | قراءة `supabase/docker/.env`؛ **`defaultSupabaseDockerDir()`** يفضّل `./supabase/docker` ثم `~/supabase/docker` |
+| `__scripts/docker-compose-unified.mjs` | يضمن وجود `supabase/docker` ثم `docker compose -p bookcars` بالملفين |
 | `__scripts/supabase/clone-official-docker.mjs` | استنساخ الرسمي إلى `supabase/docker` + دمج |
 | `__scripts/supabase/merge-gotrue-bookcars.mjs` | دمج GoTrue + منافذ المكدس + تطبيع LF |
 | `__scripts/supabase/sync-bookcars-from-supabase.mjs` | مزامنة الأسرار والعناوين إلى BookCars |

@@ -105,8 +105,30 @@ async function fetchOfficialEnvExample() {
   return res.text()
 }
 
+/**
+ * مع `docker compose -f docker-compose.yml -f supabase/docker/docker-compose.yml` تُحسب المسارات
+ * من جذر المستودع؛ استبدال ./volumes/ بـ ./supabase/docker/volumes/ يوجّه الربط الصحيح.
+ */
+async function patchComposeVolumePathsForBookcarsMerge(dockerDir) {
+  const composePath = path.join(dockerDir, 'docker-compose.yml')
+  let s
+  try {
+    s = await fs.readFile(composePath, 'utf8')
+  } catch {
+    return
+  }
+  if (s.includes('./supabase/docker/volumes/')) return
+  if (!s.includes('./volumes/')) return
+  const next = s.replace(/\.\/volumes\//g, './supabase/docker/volumes/')
+  await fs.writeFile(composePath, next, 'utf8')
+  console.log(
+    '[supabase] Patched docker-compose.yml: ./volumes/ → ./supabase/docker/volumes/ (unified compose from repo root)',
+  )
+}
+
 async function main() {
   const { dir, fixKongLf } = parseArgs()
+  await patchComposeVolumePathsForBookcarsMerge(dir)
   const envPath = path.join(dir, '.env')
 
   await fs.mkdir(dir, { recursive: true })

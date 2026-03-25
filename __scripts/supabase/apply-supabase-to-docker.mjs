@@ -9,11 +9,31 @@
  *   node __scripts/supabase/apply-supabase-to-docker.mjs --no-docker
  */
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultBookcarsRoot = path.resolve(__dirname, '..', '..')
+
+const COMPOSE_PROJECT = 'bookcars'
+
+function unifiedComposePrefix(bookcarsRoot) {
+  const supa = path.join(bookcarsRoot, 'supabase', 'docker', 'docker-compose.yml')
+  if (!fs.existsSync(supa)) return []
+  return [
+    '-p',
+    COMPOSE_PROJECT,
+    '--env-file',
+    'supabase/docker/.env',
+    '-f',
+    'docker-compose.yml',
+    '-f',
+    'supabase/docker/docker-compose.yml',
+    '-f',
+    'infra/docker-compose.supabase-bookcars.override.yml',
+  ]
+}
 
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -63,10 +83,12 @@ function runNode(scriptName, argv, cwd) {
 }
 
 function dockerCompose(bookcarsRoot, composeArgs) {
-  const r = spawnSync('docker', ['compose', ...composeArgs], {
+  const prefix = unifiedComposePrefix(bookcarsRoot)
+  const r = spawnSync('docker', ['compose', ...prefix, ...composeArgs], {
     cwd: bookcarsRoot,
     stdio: 'inherit',
     env: process.env,
+    shell: process.platform === 'win32',
   })
   if (r.error) {
     console.error(

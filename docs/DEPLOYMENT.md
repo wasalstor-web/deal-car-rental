@@ -16,14 +16,14 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 
 ملف مرجعي واحد للقيم المنسّقة: `infra/supabase-self-host.defaults.env` — ولدمج إعادة توجيه GoTrue مع الويب: `infra/supabase-gotrue-bookcars.fragment.env` — وللمنافذ بجانب BookCars دون تعارض: **`infra/supabase-bookcars-stack.fragment.env`**.
 
-**مكدس واحد (Compose):** مرة واحدة `npm run supabase:clone-docker` (ينشئ `supabase/docker`، المجلد في `.gitignore`)، ثم `npm run supabase:sync-bookcars`، ثم `npm run docker:up:supabase`. الإيقاف: `npm run docker:down:supabase`. تفاصيل: [supabase/README.md](../supabase/README.md).
+**مكدس واحد (Compose):** **`npm run docker:up`** يدمج BookCars + Supabase (`-p bookcars`، ملفان) ويستنسخ `supabase/docker` عند أول تشغيل إن لزم. ثم **`npm run supabase:sync-bookcars`** لملء `backend/.env.docker` و`frontend/.env.docker`. الإيقاف: **`npm run docker:down`**. بدون Supabase: **`npm run docker:up:bookcars-only`**. تفاصيل: [supabase/README.md](../supabase/README.md).
 
 **Windows + Supabase Docker:** إذا بقي حاوية `supabase-kong` غير صحية وتظهر في السجلات `exec /home/kong/kong-entrypoint.sh: no such file or directory`، فغالبًا الملف `supabase/docker/volumes/api/kong-entrypoint.sh` محفوظ بـ CRLF. حوّله إلى أسطر LF فقط (مثلاً عبر محرر أو `python` يستبدل `\r\n` بـ `\n`) ثم أعد تشغيل Kong. إن كان **`supabase-pooler`** يعيد التشغيل بخطأ Elixir **carriage return** في السجلات، طبّق نفس التطبيع على **`volumes/pooler/pooler.exs`** ثم **`docker compose restart supavisor`**. سكربت **`npm run supabase:merge-gotrue`** (على Windows أو مع **`--fix-kong-lf`**) يحاول تطبيع **كلا** الملفين تلقائيًا.
 
 ## Local / staging (Docker)
 
 1. Copy env templates: `backend/.env.docker`, `frontend/.env.docker`, `admin/.env.docker` (adjust `VITE_BC_API_HOST`, CDN URLs, keys).
-2. From repo root: `docker compose up -d --build` (الواجهة الأساسية بدون mongo-express).
+2. From repo root: **`npm run docker:up`** — BookCars + Supabase (يستنسخ `supabase/docker` تلقائياً عند الحاجة). بدون Supabase: **`npm run docker:up:bookcars-only`**.
 3. **mongo-express** (اختياري): `docker compose --profile devtools up -d --build` أو `npm run docker:up:tools`.
 4. **عزل الشبكة**: الخدمات على شبكة `bookcars_isolated` — لا تختلط مع مشاريع Compose أخرى على نفس الجهاز إلا إذا ربطتها يدوياً.
 5. **تعارض المنافذ على VPS**: عرّف `BOOKCARS_HOST_PORT_*` في `.env` بجانب `docker-compose.yml` — مثال: `deploy/hostinger/ports-root-stack.env.example`.

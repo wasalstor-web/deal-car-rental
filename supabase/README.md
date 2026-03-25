@@ -1,43 +1,62 @@
-# Supabase + BookCars (نفس مشروع Docker Compose)
+# Supabase + BookCars — مشروع Docker موحّد
 
-مجلد **`supabase/docker/`** لا يُرفع إلى Git (يُنشأ محلياً). هو نسخة من [Supabase Docker الرسمي](https://github.com/supabase/supabase/tree/master/docker).
-
-## التثبيت مرة واحدة
-
-من **جذر المستودع**:
+مجلد **`supabase/docker/`** لا يُرفع إلى Git. يُنشأ تلقائياً عند أول **`npm run docker:up`** (يستدعي `supabase:clone-docker` إن لزم)، أو يدوياً:
 
 ```bash
 npm run supabase:clone-docker
 ```
 
-يتطلب **Git** في PATH. الخيار `--force` يستبدل المجلد بالكامل.
+يتطلب **Git** في PATH. **`--force`** مع سكربت الاستنساخ يستبدل المجلد بالكامل.
 
-## التشغيل الموحّد (BookCars + Supabase)
+## التشغيل الافتراضي (BookCars + Supabase)
+
+```bash
+npm run docker:up
+```
+
+يستخدم `docker compose -p bookcars` مع **`--env-file supabase/docker/.env`** وملفات: `docker-compose.yml` + `supabase/docker/docker-compose.yml` + `infra/docker-compose.supabase-bookcars.override.yml` (أسماء حاويات `bookcars-supabase-*`).
+
+بعد أول تشغيل أو تعديل مفاتيح Supabase:
 
 ```bash
 npm run supabase:sync-bookcars
-npm run docker:up:supabase
+npm run docker:up
 ```
 
-- اسم المشروع: **`bookcars`** (`docker compose -p bookcars`) حتى تبقى كل الحاويات تحت بادئة واحدة.
-- شبكة BookCars: **`bookcars_isolated`** — خدمات Supabase تستخدم الشبكة الافتراضية للمشروع (`bookcars_default`)؛ المتصفح يصل إلى Kong على المضيف، ولا حاجة لربط الشبكتين لمسار تسجيل الدخول الحالي.
+**بدون Supabase:**
 
-## المنافذ (بعد دمج `infra/supabase-bookcars-stack.fragment.env`)
+```bash
+npm run docker:up:bookcars-only
+```
+
+**mongo-express:**
+
+```bash
+npm run docker:up:tools
+```
+
+**الإيقاف:**
+
+```bash
+npm run docker:down
+```
+
+## مسارات الحاويات
+
+`npm run supabase:merge-gotrue` يعدّل `supabase/docker/docker-compose.yml`: يستبدل `./volumes/` بـ **`./supabase/docker/volumes/`** لأن المسارات تُحسب من جذر المستودع عند دمج الملفين.
+
+## تعارض المنفذ 8010
+
+أوقف أي **`supabase-kong`** قديم على 8010، أو غيّر المنافذ في `infra/supabase-bookcars-stack.fragment.env` ثم `npm run supabase:merge-gotrue`.
+
+## المنافذ
 
 | الخدمة | عنوان |
 |--------|--------|
-| Kong (Supabase API + Studio) | `http://localhost:8010` |
+| Kong | `http://localhost:8010` |
 | BookCars ويب | `http://localhost:13080` |
-| BookCars API | `http://localhost:4002` |
+| API | `http://localhost:4002` |
 
-غيّر القيم في **`infra/supabase-bookcars-stack.fragment.env`** ثم نفّذ `npm run supabase:merge-gotrue` (أو أعد تشغيل الدمج يدوياً في `supabase/docker/.env`).
+## مفاتيح إنتاج
 
-## مفاتيح وأسرار
-
-قبل الإنتاج: اتبع [توثيق Supabase](https://supabase.com/docs/guides/self-hosting/docker#configuring-and-securing-supabase) و`./utils/generate-keys.sh` داخل `supabase/docker` إن لزم.
-
-## إيقاف المكدس
-
-```bash
-npm run docker:down:supabase
-```
+[Supabase self-hosting](https://supabase.com/docs/guides/self-hosting/docker#configuring-and-securing-supabase) و`generate-keys.sh` داخل `supabase/docker`.

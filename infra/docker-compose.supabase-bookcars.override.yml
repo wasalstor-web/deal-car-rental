@@ -1,0 +1,29 @@
+# يُدمج بعد supabase/docker/docker-compose.yml — أسماء حاويات مسبوقة بـ bookcars-
+# لتجنب تعارض /supabase-* مع أي تثبيت Supabase آخر على نفس Docker.
+services:
+  studio:
+    container_name: bookcars-supabase-studio
+  kong:
+    container_name: bookcars-supabase-kong
+  auth:
+    container_name: bookcars-supabase-auth
+  rest:
+    container_name: bookcars-supabase-rest
+  realtime:
+    container_name: bookcars-supabase-realtime
+  storage:
+    container_name: bookcars-supabase-storage
+  imgproxy:
+    container_name: bookcars-supabase-imgproxy
+  meta:
+    container_name: bookcars-supabase-meta
+  functions:
+    container_name: bookcars-supabase-edge-functions
+  analytics:
+    container_name: bookcars-supabase-analytics
+  db:
+    container_name: bookcars-supabase-db
+  vector:
+    container_name: bookcars-supabase-vector
+  supavisor:
+    container_name: bookcars-supabase-pooler
