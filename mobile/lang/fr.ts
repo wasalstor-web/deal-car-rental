@@ -92,6 +92,8 @@ export const fr = {
   SIGN_UP: "S'inscrire",
   SIGN_UP_TITLE: 'Inscription',
   SIGN_IN_ERROR: 'E-mail ou mot de passe incorrect.',
+  SIGN_IN_WITH_SUPABASE: 'Se connecter avec Supabase',
+  SUPABASE_SIGN_IN_ERROR: 'Échec Supabase. Vérifiez les identifiants et le JWT du serveur.',
   IS_BLACKLISTED: 'Votre compte est suspendu.',
   FORGOT_PASSWORD: 'Mot de passe oublié ?',
   RESET_PASSWORD: 'Veuillez saisir votre adresse e-mail afin de vous envoyer un e-mail pour réinitialiser votre mot de passe.',

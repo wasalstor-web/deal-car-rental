@@ -125,6 +125,21 @@ export const socialSignin = (data: bookcarsTypes.SignInPayload): Promise<{ statu
     })
 
 /**
+ * Supabase Auth → BookCars session (backend verifies Supabase JWT).
+ */
+export const supabaseSignin = (data: bookcarsTypes.SupabaseSignInPayload): Promise<{ status: number, data: bookcarsTypes.User }> =>
+  axiosInstance
+    .post(
+      '/api/supabase-sign-in/frontend',
+      data,
+      { withCredentials: true }
+    )
+    .then((res) => {
+      localStorage.setItem('bc-fe-user', JSON.stringify(res.data))
+      return { status: res.status, data: res.data }
+    })
+
+/**
  * Sign out.
  *
  * @param {boolean} [redirect=true]

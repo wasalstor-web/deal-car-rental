@@ -1,4 +1,5 @@
 # Default credentials are for local dev only. For production, use strong secrets and restrict ports.
+# Self-hosted Supabase (Kong; المنفذ الافتراضي غالبًا 8000) + BookCars — راجع docs/DEPLOYMENT.md و infra/
 services:
   mongo:
     image: mongo:latest

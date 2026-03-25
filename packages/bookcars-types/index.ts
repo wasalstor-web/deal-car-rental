@@ -346,6 +346,13 @@ export interface SignInPayload {
   socialSignInType?: SocialSignInType
 }
 
+/** Supabase Auth access token (JWT) — verified on backend with BC_SUPABASE_JWT_SECRET */
+export interface SupabaseSignInPayload {
+  accessToken: string
+  stayConnected?: boolean
+  mobile?: boolean
+}
+
 export interface ResendLinkPayload {
   email?: string
 }

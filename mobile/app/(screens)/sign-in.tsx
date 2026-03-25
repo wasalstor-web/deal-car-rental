@@ -15,6 +15,8 @@ import { setI18nLocaleOnly } from '@/utils/applyAppLocale'
 import Switch from '@/components/Switch'
 import Header from '@/components/Header'
 import SocialLogin from '@/components/SocialLogin'
+import { getSupabaseMobileClient } from '@/services/supabaseClient'
+import * as env from '@/config/env.config'
 
 const SignInScreen = () => {
   const isFocused = useIsFocused()
@@ -32,6 +34,7 @@ const SignInScreen = () => {
   const [passwordLengthError, setPasswordLengthError] = useState(false)
   const [passwordError, setPasswordError] = useState(false)
   const [blacklisted, setBlacklisted] = useState(false)
+  const [supabaseError, setSupabaseError] = useState(false)
 
   const emailRef = useRef<ReactTextInput>(null)
   const passwordRef = useRef<ReactTextInput>(null)
@@ -48,6 +51,7 @@ const SignInScreen = () => {
     setPasswordLengthError(false)
     setPasswordError(false)
     setBlacklisted(false)
+    setSupabaseError(false)
 
     if (emailRef.current) {
       emailRef.current.clear()
@@ -185,6 +189,50 @@ const SignInScreen = () => {
     }
   }
 
+  const onPressSupabaseSignIn = async () => {
+    setSupabaseError(false)
+    const _emailValid = await validateEmail()
+    if (!_emailValid) {
+      return
+    }
+    if (!validatePassword()) {
+      return
+    }
+    const supabase = getSupabaseMobileClient()
+    if (!supabase) {
+      setSupabaseError(true)
+      return
+    }
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      if (error || !data.session?.access_token) {
+        setSupabaseError(true)
+        return
+      }
+      const res = await UserService.supabaseSignin({
+        accessToken: data.session.access_token,
+        stayConnected,
+        mobile: true,
+      })
+      if (res.status === 200) {
+        if (res.data.blacklisted) {
+          await UserService.signout(false)
+          setBlacklisted(true)
+        } else {
+          await helper.registerPushToken(res.data._id as string)
+          await UserService.setLanguage(res.data.language || UserService.getDefaultLanguage())
+          clear()
+          router.push({ pathname: '/', params: { d: new Date().getTime().toString() } })
+        }
+      } else {
+        setSupabaseError(true)
+      }
+    } catch (err) {
+      helper.error(err)
+      setSupabaseError(true)
+    }
+  }
+
   const onPressSignUp = () => {
     router.push('/sign-up')
   }
@@ -226,6 +274,10 @@ const SignInScreen = () => {
 
           <SocialLogin stayConnected={stayConnected} />
 
+          {env.SUPABASE_AUTH_ENABLED && (
+            <Button style={styles.component} color="secondary" label={i18n.t('SIGN_IN_WITH_SUPABASE')} onPress={onPressSupabaseSignIn} />
+          )}
+
           <Switch style={styles.stayConnected} textStyle={styles.stayConnectedText} label={i18n.t('STAY_CONNECTED')} value={stayConnected} onValueChange={onChangeStayConnected} />
 
           <Button style={styles.component} label={i18n.t('SIGN_IN')} onPress={onPressSignIn} />
@@ -234,6 +286,7 @@ const SignInScreen = () => {
 
           <Link style={styles.link} label={i18n.t('FORGOT_PASSWORD')} onPress={onPressForgotPassword} />
 
+          {supabaseError && <Error style={styles.error} message={i18n.t('SUPABASE_SIGN_IN_ERROR')} />}
           {blacklisted && <Error style={styles.error} message={i18n.t('IS_BLACKLISTED')} />}
         </View>
       </ScrollView>

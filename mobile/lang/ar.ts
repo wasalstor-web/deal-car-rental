@@ -93,6 +93,8 @@ export const ar = {
   SIGN_UP: 'إنشاء حساب',
   SIGN_UP_TITLE: 'إنشاء حساب',
   SIGN_IN_ERROR: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+  SIGN_IN_WITH_SUPABASE: 'تسجيل الدخول عبر Supabase',
+  SUPABASE_SIGN_IN_ERROR: 'فشل تسجيل الدخول عبر Supabase. تحقق من البيانات وسر JWT على السيرفر.',
   IS_BLACKLISTED: 'تم تعليق حسابك.',
   FORGOT_PASSWORD: 'نسيت كلمة المرور؟',
   RESET_PASSWORD: 'أدخل بريدك الإلكتروني لنرسل لك رابط إعادة تعيين كلمة المرور.',

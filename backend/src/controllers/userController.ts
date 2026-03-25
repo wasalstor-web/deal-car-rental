@@ -875,6 +875,103 @@ export const socialSignin = async (req: Request, res: Response) => {
 }
 
 /**
+ * Sign in with Supabase Auth: verify Supabase JWT, link or create Mongo user, issue BookCars session.
+ *
+ * @export
+ * @async
+ * @param {Request} req
+ * @param {Response} res
+ * @returns {unknown}
+ */
+export const supabaseSignin = async (req: Request, res: Response) => {
+  const { body }: { body: bookcarsTypes.SupabaseSignInPayload } = req
+  const { accessToken, stayConnected, mobile } = body
+
+  try {
+    if (!env.SUPABASE_JWT_SECRET) {
+      res.status(503).send('Supabase auth is not configured')
+      return
+    }
+
+    if (!accessToken) {
+      throw new Error('body.accessToken not found')
+    }
+
+    const { email, fullName, avatar } = await authHelper.verifySupabaseAccessToken(accessToken)
+    const type = req.params.type.toLowerCase() as bookcarsTypes.AppType
+
+    if (![bookcarsTypes.AppType.Frontend, bookcarsTypes.AppType.Admin].includes(type)) {
+      res.sendStatus(400)
+      return
+    }
+
+    let user = await User.findOne({ email })
+
+    if (!user) {
+      if (type !== bookcarsTypes.AppType.Frontend) {
+        res.sendStatus(204)
+        return
+      }
+      user = new User({
+        email,
+        fullName,
+        active: true,
+        verified: true,
+        language: env.DEFAULT_LANGUAGE,
+        enableEmailNotifications: true,
+        type: bookcarsTypes.UserType.User,
+        blacklisted: false,
+        avatar,
+      })
+      await user.save()
+    } else if (
+      (type === bookcarsTypes.AppType.Admin && user.type === bookcarsTypes.UserType.User)
+      || (type === bookcarsTypes.AppType.Frontend && user.type !== bookcarsTypes.UserType.User)
+    ) {
+      res.sendStatus(204)
+      return
+    }
+
+    const cookieOptions: CookieOptions = helper.clone(env.COOKIE_OPTIONS)
+
+    if (stayConnected) {
+      cookieOptions.maxAge = 400 * 24 * 60 * 60 * 1000
+    } else {
+      cookieOptions.maxAge = env.JWT_EXPIRE_AT * 1000
+    }
+
+    const payload: authHelper.SessionData = { id: user._id.toString() }
+    const token = await authHelper.encryptJWT(payload, stayConnected)
+
+    const loggedUser: bookcarsTypes.User = {
+      _id: user._id.toString(),
+      email: user.email,
+      fullName: user.fullName,
+      language: user.language,
+      enableEmailNotifications: user.enableEmailNotifications,
+      blacklisted: user.blacklisted,
+      avatar: user.avatar,
+    }
+
+    if (mobile) {
+      loggedUser.accessToken = token
+      res.status(200).send(loggedUser)
+      return
+    }
+
+    const cookieName = authHelper.getAuthCookieName(req)
+    res
+      .clearCookie(cookieName)
+      .cookie(cookieName, token, cookieOptions)
+      .status(200)
+      .send(loggedUser)
+  } catch (err) {
+    logger.error('[user.supabaseSignin]', err)
+    res.status(400).send(i18n.t('ERROR') + err)
+  }
+}
+
+/**
  * Sign out.
  *
  * @export

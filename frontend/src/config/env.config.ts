@@ -142,6 +142,10 @@ const env = {
   MAP_LONGITUDE: Number(String(import.meta.env.VITE_BC_MAP_LONGITUDE || '1.6528399999999976')),
   MAP_ZOOM: Number(String(import.meta.env.VITE_BC_MAP_ZOOM || '5')),
   PASSWORD_MIN_LENGTH: 6,
+  /** Supabase project URL (Auth). Empty = hide Supabase sign-in. */
+  SUPABASE_URL: String(import.meta.env.VITE_BC_SUPABASE_URL || '').trim(),
+  /** Supabase anon (public) key */
+  SUPABASE_ANON_KEY: String(import.meta.env.VITE_BC_SUPABASE_ANON_KEY || '').trim(),
 }
 
 export default env

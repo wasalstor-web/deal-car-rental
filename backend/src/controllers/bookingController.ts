@@ -440,9 +440,9 @@ const notifyDriver = async (booking: env.Booking) => {
     await mailHelper.sendMail(mailOptions)
   }
 
-  // push notification
+  // push notification (Expo) — requires BC_EXPO_ACCESS_TOKEN on the server
   const pushToken = await PushToken.findOne({ user: driver._id })
-  if (pushToken) {
+  if (pushToken && env.EXPO_ACCESS_TOKEN) {
     const { token } = pushToken
     const expo = new Expo({ accessToken: env.EXPO_ACCESS_TOKEN })
 
@@ -498,6 +498,8 @@ const notifyDriver = async (booking: env.Booking) => {
         }
       }
     })()
+  } else if (pushToken && !env.EXPO_ACCESS_TOKEN) {
+    logger.info('Push notification skipped: BC_EXPO_ACCESS_TOKEN is not set')
   }
 }
 

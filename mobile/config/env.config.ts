@@ -22,6 +22,8 @@ import {
   BC_DEPOSIT_FILTER_VALUE_3,
   BC_WEBSITE_NAME,
   BC_GOOGLE_WEB_CLIENT_ID,
+  BC_SUPABASE_URL,
+  BC_SUPABASE_ANON_KEY,
 } from '@env'
 
 /**
@@ -271,3 +273,21 @@ export const DEPOSIT_FILTER_VALUE_3: number = Number(BC_DEPOSIT_FILTER_VALUE_3)
  * @type {string}
  */
 export const GOOGLE_WEB_CLIENT_ID: string = String(BC_GOOGLE_WEB_CLIENT_ID)
+
+const _supabaseUrl = String(BC_SUPABASE_URL || '').trim()
+const _supabaseAnon = String(BC_SUPABASE_ANON_KEY || '').trim()
+
+/**
+ * Supabase public URL (optional).
+ */
+export const SUPABASE_URL: string = _supabaseUrl
+
+/**
+ * Supabase anon key (optional).
+ */
+export const SUPABASE_ANON_KEY: string = _supabaseAnon
+
+/**
+ * True when mobile .env includes Supabase Auth credentials.
+ */
+export const SUPABASE_AUTH_ENABLED: boolean = Boolean(_supabaseUrl && _supabaseAnon)

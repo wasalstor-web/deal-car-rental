@@ -7,3 +7,7 @@
 /**/dist
 /node_modules
 .eslintcache
+
+# Hostinger VPS secrets (keep examples in repo)
+deploy/hostinger/.env
+deploy/hostinger/secrets/backend.env

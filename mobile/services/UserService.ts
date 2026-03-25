@@ -148,6 +148,19 @@ export const socialSignin = (data: bookcarsTypes.SignInPayload): Promise<{ statu
     })
 
 /**
+ * Supabase Auth → BookCars session.
+ */
+export const supabaseSignin = (data: bookcarsTypes.SupabaseSignInPayload): Promise<{ status: number, data: bookcarsTypes.User }> =>
+  axiosInstance
+    .post('/api/supabase-sign-in/frontend', data)
+    .then(async (res) => {
+      if (res.data.accessToken) {
+        await AsyncStorage.storeObject('bc-user', res.data)
+      }
+      return { status: res.status, data: res.data }
+    })
+
+/**
  * Get push notification token.
  *
  * @async

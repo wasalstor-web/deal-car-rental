@@ -49,6 +49,35 @@ export const decryptJWT = async (input: string) => {
   return payload as SessionData
 }
 
+export type SupabaseUserFromJwt = {
+  email: string
+  fullName: string
+  avatar?: string
+}
+
+/**
+ * Verify a Supabase Auth access token (HS256, project JWT secret).
+ *
+ * @async
+ * @param {string} token
+ * @returns {Promise<SupabaseUserFromJwt>}
+ */
+export const verifySupabaseAccessToken = async (token: string): Promise<SupabaseUserFromJwt> => {
+  if (!env.SUPABASE_JWT_SECRET) {
+    throw new Error('Supabase auth is not configured (BC_SUPABASE_JWT_SECRET)')
+  }
+  const secret = new TextEncoder().encode(env.SUPABASE_JWT_SECRET)
+  const { payload } = await jose.jwtVerify(token, secret, { algorithms: ['HS256'] })
+  const email = typeof payload.email === 'string' ? payload.email : ''
+  if (!email || !helper.isValidEmail(email)) {
+    throw new Error('Supabase token: missing or invalid email claim')
+  }
+  const meta = payload.user_metadata as { full_name?: string; name?: string; avatar_url?: string } | undefined
+  const fullName = (meta?.full_name || meta?.name || email.split('@')[0]).trim() || email.split('@')[0]
+  const avatar = typeof meta?.avatar_url === 'string' ? meta.avatar_url : undefined
+  return { email: helper.trim(email, ' '), fullName, avatar }
+}
+
 /**
  * Check whether the request is from the admin or not.
  *

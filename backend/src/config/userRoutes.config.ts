@@ -11,6 +11,7 @@ const routes = {
   validateEmail: '/api/validate-email',
   signin: '/api/sign-in/:type',
   socialSignin: '/api/social-sign-in',
+  supabaseSignin: '/api/supabase-sign-in/:type',
   getPushToken: '/api/push-token/:userId',
   createPushToken: '/api/create-push-token/:userId/:token',
   deletePushToken: '/api/delete-push-token/:userId',

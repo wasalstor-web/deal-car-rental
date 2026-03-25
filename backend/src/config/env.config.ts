@@ -349,6 +349,14 @@ export const MINIMUM_AGE = Number.parseInt(__env__('BC_MINIMUM_AGE', false, '21'
 export const EXPO_ACCESS_TOKEN = __env__('BC_EXPO_ACCESS_TOKEN', false)
 
 /**
+ * Supabase JWT secret (Settings → API → JWT Secret in Supabase Cloud, or JWT_SECRET when self-hosting).
+ * Used only to verify Supabase-issued access tokens for /api/supabase-sign-in. Leave empty to disable.
+ *
+ * @type {string}
+ */
+export const SUPABASE_JWT_SECRET = __env__('BC_SUPABASE_JWT_SECRET', false)
+
+/**
  * Stripe secret key.
  *
  * @type {string}

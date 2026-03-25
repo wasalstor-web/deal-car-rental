@@ -93,6 +93,8 @@ export const en = {
   SIGN_UP: 'Sign up',
   SIGN_UP_TITLE: 'Sign up',
   SIGN_IN_ERROR: 'Incorrect email or password.',
+  SIGN_IN_WITH_SUPABASE: 'Sign in with Supabase',
+  SUPABASE_SIGN_IN_ERROR: 'Supabase sign-in failed. Check credentials and server JWT secret.',
   IS_BLACKLISTED: 'Your account is suspended.',
   FORGOT_PASSWORD: 'Forgot password?',
   RESET_PASSWORD: 'Please enter your email address so we can send you an email to reset your password.',

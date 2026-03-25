@@ -22,6 +22,8 @@ import SocialLogin from '@/components/SocialLogin'
 import Footer from '@/components/Footer'
 import { schema, FormFields } from '@/models/SignInForm'
 import PasswordInput from '@/components/PasswordInput'
+import { getSupabaseBrowserClient } from '@/services/supabaseClient'
+import env from '@/config/env.config'
 
 import '@/assets/css/signin.css'
 
@@ -38,6 +40,7 @@ const SignIn = () => {
     formState: { errors, isSubmitting },
     setError,
     clearErrors,
+    getValues,
   } = useForm({
     resolver: zodResolver(schema),
     mode: 'onSubmit',
@@ -45,6 +48,48 @@ const SignIn = () => {
 
   const signinError = () => {
     setError('root', { message: strings.ERROR_IN_SIGN_IN })
+  }
+
+  const supabaseConfigured = Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY)
+
+  const onSupabaseSignIn = async () => {
+    clearErrors('root')
+    const email = getValues('email')
+    const password = getValues('password')
+    if (!email || !password) {
+      setError('root', { message: strings.ERROR_IN_SIGN_IN })
+      return
+    }
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) {
+      setError('root', { message: strings.SUPABASE_SIGN_IN_ERROR })
+      return
+    }
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      if (error || !data.session?.access_token) {
+        setError('root', { message: strings.SUPABASE_SIGN_IN_ERROR })
+        return
+      }
+      const res = await UserService.supabaseSignin({
+        accessToken: data.session.access_token,
+        stayConnected: UserService.getStayConnected(),
+      })
+      if (res.status === 200) {
+        if (res.data.blacklisted) {
+          await UserService.signout(false)
+          setError('root', { message: strings.IS_BLACKLISTED })
+        } else {
+          const user = await UserService.getUser(res.data._id)
+          setUser(user)
+          setUserLoaded(true)
+        }
+      } else {
+        setError('root', { message: strings.SUPABASE_SIGN_IN_ERROR })
+      }
+    } catch {
+      setError('root', { message: strings.SUPABASE_SIGN_IN_ERROR })
+    }
   }
 
   const onSubmit = async ({ email, password }: FormFields) => {
@@ -160,6 +205,22 @@ const SignIn = () => {
             </div>
 
             <SocialLogin />
+
+            {supabaseConfigured && (
+              <div className="signin-buttons">
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="secondary"
+                  className="btn-margin btn-margin-bottom"
+                  fullWidth
+                  onClick={onSupabaseSignIn}
+                  disabled={isSubmitting}
+                >
+                  {strings.SIGN_IN_WITH_SUPABASE}
+                </Button>
+              </div>
+            )}
 
             <div className="signin-buttons">
               <Button variant="outlined" color="primary" onClick={() => navigate('/sign-up')} className="btn-margin btn-margin-bottom">

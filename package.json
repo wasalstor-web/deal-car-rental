@@ -37,7 +37,15 @@
     "i18n:fetch-ar": "node __scripts/i18n/fetch-ar-translations.mjs",
     "i18n:verify": "node __scripts/i18n/verify-locale-parity.mjs",
     "i18n:verify-mobile": "node __scripts/i18n/verify-mobile-lang-parity.mjs",
-    "i18n:export-mobile": "node __scripts/i18n/export-mobile-en.mjs"
+    "i18n:export-mobile": "node __scripts/i18n/export-mobile-en.mjs",
+    "docker:up": "docker compose up -d --build",
+    "mobile:android": "npm run android --prefix mobile",
+    "supabase:merge-gotrue": "node __scripts/supabase/merge-gotrue-bookcars.mjs",
+    "supabase:merge-gotrue:fix-lf": "node __scripts/supabase/merge-gotrue-bookcars.mjs --fix-kong-lf",
+    "supabase:sync-bookcars": "node __scripts/supabase/sync-bookcars-from-supabase.mjs",
+    "supabase:verify-local": "node __scripts/supabase/verify-supabase-local.mjs",
+    "supabase:seed-user": "node __scripts/supabase/seed-local-auth-user.mjs",
+    "supabase:apply-docker": "node __scripts/supabase/apply-supabase-to-docker.mjs"
   },
   "devDependencies": {
     "chalk": "^5.4.1",

@@ -1,0 +1,2 @@
+# Keep shell scripts LF-only (Linux deploys, Docker bind mounts, CI).
+*.sh text eol=lf

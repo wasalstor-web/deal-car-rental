@@ -1,0 +1,81 @@
+# BookCars — Hostinger VPS + Traefik (same pattern as wordpress-o8cs on srv1125123).
+# From repo root: docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
+# Copy deploy/hostinger/.env.example → deploy/hostinger/.env and deploy/hostinger/secrets/backend.env.example → secrets/backend.env
+
+services:
+  mongo:
+    image: mongo:latest
+    command: mongod --quiet --logpath /dev/null
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+
+  bc-backend:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./secrets/backend.env
+    environment:
+      BC_DB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD}@mongo:27017/bookcars?authSource=admin&appName=bookcars
+      BC_FRONTEND_HOST: https://${WEB_FQDN}/
+      BC_ADMIN_HOST: https://${ADMIN_FQDN}/
+      BC_AUTH_COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+    depends_on:
+      - mongo
+    volumes:
+      - cdn:/var/www/cdn/bookcars
+      - backend_logs:/bookcars/backend/logs
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule=Host(`${API_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=4002
+
+  bc-admin:
+    build:
+      context: ../..
+      dockerfile: deploy/hostinger/docker/admin.Dockerfile
+      args:
+        API_PUBLIC_URL: https://${API_FQDN}
+    restart: unless-stopped
+    depends_on:
+      - bc-backend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.rule=Host(`${ADMIN_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-admin.loadbalancer.server.port=3001
+
+  bc-frontend:
+    build:
+      context: ../..
+      dockerfile: deploy/hostinger/docker/frontend.Dockerfile
+      args:
+        API_PUBLIC_URL: https://${API_FQDN}
+        SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-}
+        SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+    restart: unless-stopped
+    depends_on:
+      - bc-backend
+    volumes:
+      - cdn:/var/www/cdn/bookcars
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${WEB_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-web.loadbalancer.server.port=80
+
+volumes:
+  cdn:
+  mongodb_data:
+  mongodb_config:
+  backend_logs:
