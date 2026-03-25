@@ -29,7 +29,9 @@ https://github.com/user-attachments/assets/01afc5ec-3c0a-47b9-a4e1-3b8888b2a695
 منصة تأجير سيارات (ويب + لوحة موردين + API + موبايل) جاهزة للتشغيل والتخصيص.  
 **Deal Car Rental** is this deployment’s product name; the codebase extends the open-source **BookCars** stack below.
 
-- Repo layout: see [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+- **GitHub:** [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental)
+- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+- Upstream BookCars: `git remote add upstream https://github.com/aelassas/bookcars.git` then `git fetch upstream` (remote `upstream` may already exist)
 
 ## BookCars (upstream)
 

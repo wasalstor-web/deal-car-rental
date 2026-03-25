@@ -13,13 +13,13 @@
     "aggregator",
     "bookcars"
   ],
-  "homepage": "https://github.com/aelassas/bookcars#readme",
+  "homepage": "https://github.com/wasalstor-web/deal-car-rental#readme",
   "bugs": {
-    "url": "https://github.com/aelassas/bookcars/issues"
+    "url": "https://github.com/wasalstor-web/deal-car-rental/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aelassas/bookcars.git"
+    "url": "git+https://github.com/wasalstor-web/deal-car-rental.git"
   },
   "funding": "https://github.com/sponsors/aelassas",
   "author": "Akram El Assas",
