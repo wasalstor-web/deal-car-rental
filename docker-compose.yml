@@ -1,25 +1,41 @@
 # Default credentials are for local dev only. For production, use strong secrets and restrict ports.
 # Self-hosted Supabase (Kong; المنفذ الافتراضي غالبًا 8000) + BookCars — راجع docs/DEPLOYMENT.md و infra/
+#
+# — عزل عن مشاريع Docker أخرى على نفس السيرفر: شبكة bridge مخصّصة لكل مشروع Compose (بادئة اسم المشروع).
+# — تعارض المنافذ على المضيف: عرّف BOOKCARS_HOST_PORT_* في البيئة أو ملف .env بجانب هذا الملف.
+# — mongo-express: تشغيل اختياري — docker compose --profile devtools up -d
+# — نشر Hostinger معزول + Traefik: deploy/hostinger/docker-compose.yml
+
+networks:
+  bookcars_isolated:
+    driver: bridge
+
 services:
   mongo:
     image: mongo:latest
     command: mongod --quiet --logpath /dev/null
     restart: always
+    networks:
+      - bookcars_isolated
     environment:
       # Local dev — change for production
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-      - 27018:27017
+      - ${BOOKCARS_HOST_PORT_MONGO:-27018}:27017
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
 
   mongo-express:
+    profiles:
+      - devtools
     image: mongo-express:latest
     restart: always
+    networks:
+      - bookcars_isolated
     ports:
-      - 8084:8081
+      - ${BOOKCARS_HOST_PORT_MONGO_EXPRESS:-8084}:8081
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
       ME_CONFIG_BASICAUTH_USERNAME: admin
@@ -31,13 +47,15 @@ services:
     build: 
       context: .
       dockerfile: ./backend/Dockerfile
+    networks:
+      - bookcars_isolated
     env_file:
       - ./backend/.env.docker.example
       - path: ./backend/.env.docker
         required: false
     restart: always
     ports:
-      - 4002:4002
+      - ${BOOKCARS_HOST_PORT_API:-4002}:4002
     depends_on:
       - mongo
     volumes:
@@ -48,21 +66,25 @@ services:
     build: 
       context: .
       dockerfile: ./admin/Dockerfile
+    networks:
+      - bookcars_isolated
     depends_on:
       - bc-backend
     ports:
-      - 3001:3001
+      - ${BOOKCARS_HOST_PORT_ADMIN:-3001}:3001
 
   bc-frontend:
     build: 
       context: .
       dockerfile: ./frontend/Dockerfile
+    networks:
+      - bookcars_isolated
     depends_on:
       - bc-backend
     ports:
       # تجنب تعارض مع خدمات أخرى (8080/9080) — الويكي الافتراضي 8080
-      - 13080:80
-      - 8443:443
+      - ${BOOKCARS_HOST_PORT_WEB:-13080}:80
+      - ${BOOKCARS_HOST_PORT_WEB_HTTPS:-8443}:443
     volumes:
       - cdn:/var/www/cdn/bookcars
 

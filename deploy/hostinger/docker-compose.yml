@@ -1,12 +1,21 @@
 # BookCars — Hostinger VPS + Traefik (same pattern as wordpress-o8cs on srv1125123).
 # From repo root: docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
 # Copy deploy/hostinger/.env.example → deploy/hostinger/.env and deploy/hostinger/secrets/backend.env.example → secrets/backend.env
+#
+# شبكة bridge خاصة بهذا المكدس فقط — لا تُشترك مع wordpress/n8n. Mongo غير منشور على المضيف.
+# استخدم COMPOSE_PROJECT_NAME فريداً على السيرفر (مثلاً dealcarbk) لتفادي تعارض أسماء الحاويات/الوحدات.
+
+networks:
+  bookcars_isolated:
+    driver: bridge
 
 services:
   mongo:
     image: mongo:latest
     command: mongod --quiet --logpath /dev/null
     restart: unless-stopped
+    networks:
+      - bookcars_isolated
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
@@ -28,6 +37,8 @@ services:
       BC_AUTH_COOKIE_DOMAIN: ${COOKIE_DOMAIN}
     depends_on:
       - mongo
+    networks:
+      - bookcars_isolated
     volumes:
       - cdn:/var/www/cdn/bookcars
       - backend_logs:/bookcars/backend/logs
@@ -47,6 +58,8 @@ services:
     restart: unless-stopped
     depends_on:
       - bc-backend
+    networks:
+      - bookcars_isolated
     labels:
       - traefik.enable=true
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.rule=Host(`${ADMIN_FQDN}`)
@@ -65,6 +78,8 @@ services:
     restart: unless-stopped
     depends_on:
       - bc-backend
+    networks:
+      - bookcars_isolated
     volumes:
       - cdn:/var/www/cdn/bookcars
     labels:

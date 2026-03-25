@@ -2,6 +2,16 @@
 
 This stack matches the Traefik setup on VPS `srv1125123.hstgr.cloud`: routers use `Host(\`…\`)`, `websecure`, and `letsencrypt`.
 
+## Isolation from other Docker projects
+
+- **Dedicated bridge network** `bookcars_isolated`: only `mongo`, `bc-backend`, `bc-admin`, and `bc-frontend` are attached. They do not join other projects’ default networks.
+- **No Mongo on the host**: MongoDB is not published to a host port; only app containers reach it.
+- **No mongo-express** in this file (avoid exposing a DB UI on the internet).
+- **Unique `COMPOSE_PROJECT_NAME`**: Traefik router names are `${COMPOSE_PROJECT_NAME}-web|api|admin`. Pick a value that does not collide with other apps on the same VPS.
+- **Volumes** are still scoped by the Compose project name (e.g. `dealcarbk_cdn`), so data stays separate from other stacks.
+
+If you deploy the **root** `docker-compose.yml` from hPanel instead, use a unique project directory name and optional port overrides — see `ports-root-stack.env.example` (copy variables into a `.env` next to the root compose file).
+
 ## 1. DNS
 
 Point three hostnames (or your own domain) to the VPS public IP, for example:
