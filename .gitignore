@@ -11,3 +11,6 @@
 # Hostinger VPS secrets (keep examples in repo)
 deploy/hostinger/.env
 deploy/hostinger/secrets/backend.env
+
+# Supabase official Docker (npm run supabase:clone-docker) — كبير ويتضمن volumes
+/supabase/docker/

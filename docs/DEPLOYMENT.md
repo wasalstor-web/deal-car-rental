@@ -12,9 +12,11 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 | API BookCars | `http://localhost:4002` |
 | لوحة الأدمن | `http://localhost:3001` |
 | MongoDB (المضيف) | `localhost:27018` |
-| Supabase Kong (القالب الرسمي) | `http://localhost:8000` (غالبًا؛ إن كان المنفذ مشغولًا غيّره في `supabase/docker/.env` عبر `KONG_HTTP_PORT` و`KONG_HTTPS_PORT` وحدّث `SUPABASE_PUBLIC_URL` و`API_EXTERNAL_URL` لنفس منفذ HTTP) |
+| Supabase Kong | **`http://localhost:8010`** عند استخدام المكدس الموحّد مع BookCars (قيم `infra/supabase-bookcars-stack.fragment.env` يدمجها `npm run supabase:merge-gotrue`). بدون ذلك، القالب الرسمي غالبًا **8000** — غيّر `KONG_HTTP_PORT` و`SUPABASE_PUBLIC_URL` و`API_EXTERNAL_URL` معًا إن تعارض المنفذ |
 
-ملف مرجعي واحد للقيم المنسّقة: `infra/supabase-self-host.defaults.env` — ولدمج إعادة توجيه GoTrue مع الويب: `infra/supabase-gotrue-bookcars.fragment.env`.
+ملف مرجعي واحد للقيم المنسّقة: `infra/supabase-self-host.defaults.env` — ولدمج إعادة توجيه GoTrue مع الويب: `infra/supabase-gotrue-bookcars.fragment.env` — وللمنافذ بجانب BookCars دون تعارض: **`infra/supabase-bookcars-stack.fragment.env`**.
+
+**مكدس واحد (Compose):** مرة واحدة `npm run supabase:clone-docker` (ينشئ `supabase/docker`، المجلد في `.gitignore`)، ثم `npm run supabase:sync-bookcars`، ثم `npm run docker:up:supabase`. الإيقاف: `npm run docker:down:supabase`. تفاصيل: [supabase/README.md](../supabase/README.md).
 
 **Windows + Supabase Docker:** إذا بقي حاوية `supabase-kong` غير صحية وتظهر في السجلات `exec /home/kong/kong-entrypoint.sh: no such file or directory`، فغالبًا الملف `supabase/docker/volumes/api/kong-entrypoint.sh` محفوظ بـ CRLF. حوّله إلى أسطر LF فقط (مثلاً عبر محرر أو `python` يستبدل `\r\n` بـ `\n`) ثم أعد تشغيل Kong. إن كان **`supabase-pooler`** يعيد التشغيل بخطأ Elixir **carriage return** في السجلات، طبّق نفس التطبيع على **`volumes/pooler/pooler.exs`** ثم **`docker compose restart supavisor`**. سكربت **`npm run supabase:merge-gotrue`** (على Windows أو مع **`--fix-kong-lf`**) يحاول تطبيع **كلا** الملفين تلقائيًا.
 
@@ -68,13 +70,14 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 
 ### Supabase Docker على نفس الجهاز + BookCars (Docker)
 
-1. في مجلد **supabase/docker** لديك: `JWT_SECRET` و`ANON_KEY` و`SUPABASE_PUBLIC_URL` (غالبًا `http://localhost:8000` وKong على المنفذ **8000**).
+0. **اختياري — كل شيء تحت مشروع `bookcars`:** `npm run supabase:clone-docker` ثم `npm run docker:up:supabase` (يحمّل `docker-compose.yml` + `supabase/docker/docker-compose.yml` مع `-p bookcars`).
+1. في مجلد **supabase/docker** لديك: `JWT_SECRET` و`ANON_KEY` و`SUPABASE_PUBLIC_URL` (مع المكدس الموحّد غالبًا **`http://localhost:8010`** وKong على المضيف **8010**؛ انظر `infra/supabase-bookcars-stack.fragment.env`).
 2. **Backend** (`backend/.env.docker`): `BC_SUPABASE_JWT_SECRET` = نفس قيمة **`JWT_SECRET`** في Supabase (لا تستخدم `SERVICE_ROLE_KEY` هنا).
-3. **Frontend** (`frontend/.env.docker`): `VITE_BC_SUPABASE_URL` يجب أن يطابق **`SUPABASE_PUBLIC_URL`** (مثلاً `http://localhost:8000` أو أي منفذ Kong اخترته) و`VITE_BC_SUPABASE_ANON_KEY=<ANON_KEY>`. ثم أعد بناء الواجهة: `docker compose build bc-frontend && docker compose up -d bc-frontend`.
+3. **Frontend** (`frontend/.env.docker`): `VITE_BC_SUPABASE_URL` يجب أن يطابق **`SUPABASE_PUBLIC_URL`** (مثلاً `http://localhost:8010` مع المكدس الموحّد، أو `http://localhost:8000` مع القالب الافتراضي) و`VITE_BC_SUPABASE_ANON_KEY=<ANON_KEY>`. ثم أعد بناء الواجهة: `docker compose build bc-frontend && docker compose up -d bc-frontend`.
 4. **Mobile**: من المحاكي استخدم `BC_SUPABASE_URL=http://10.0.2.2:<منفذ_Kong>` (نفس رقم المنفذ في عنوان الـ host)؛ من هاتف على الشبكة استبدل بعنوان IP لجهاز الكمبيوتر. نفس **`ANON_KEY`**.
 5. في **supabase/docker/.env** عدّل **`SITE_URL`** وإن لزم **`ADDITIONAL_REDIRECT_URLS`** لتشمل واجهة BookCars، مثلاً `http://localhost:13080` (وأعد تشغيل حاويات Supabase بعد التعديل).
 6. مرجع سريع للقيم الافتراضية الرسمية (قبل `generate-keys.sh`): الملف **`infra/supabase-self-host.defaults.env`** في هذا المستودع.
-7. دمج GoTrue مع واجهة BookCars: من جذر المستودع **`npm run supabase:merge-gotrue`** (يستهدف `%USERPROFILE%\supabase\docker` أو مرّر **`--dir`**). على **Windows** يحاول السكربت تلقائيًا تطبيع **`volumes/api/kong-entrypoint.sh`** إلى أسطر **LF**؛ أو نفّذ نفس الأمر مع **`--fix-kong-lf`** على أي نظام إن استنسخت المجلد من جهاز يستخدم CRLF.
+7. دمج GoTrue مع واجهة BookCars: من جذر المستودع **`npm run supabase:merge-gotrue`** (يستهدف أولاً **`./supabase/docker`** إن وُجد فيه `.env`، وإلا **`%USERPROFILE%\supabase\docker`** — أو مرّر **`--dir`**). على **Windows** يحاول السكربت تلقائيًا تطبيع **`volumes/api/kong-entrypoint.sh`** إلى أسطر **LF**؛ أو نفّذ نفس الأمر مع **`--fix-kong-lf`** على أي نظام إن استنسخت المجلد من جهاز يستخدم CRLF.
 8. مزامنة أسرار وعناوين Supabase → BookCars دفعة واحدة: **`npm run supabase:sync-bookcars`** (اختياري: **`--supabase-dir`** و**`--bookcars-root`**). يحدّث `backend/.env.docker` و`frontend/.env.docker` و`mobile/.env` من **`JWT_SECRET`**, **`ANON_KEY`**, **`SUPABASE_PUBLIC_URL`** في `supabase/docker/.env` (والموبايل يحوّل `localhost` إلى **`10.0.2.2`** للمحاكي). بعدها أعد تشغيل **`bc-backend`** وأعد بناء **`bc-frontend`** إن لزم.
 9. **تطوير محلي بدون SMTP:** في `supabase/docker/.env` اجعل **`ENABLE_EMAIL_AUTOCONFIRM=true`** حتى يعمل تسجيل الدخول بالبريد/كلمة المرور بدون رسالة تأكيد (لا تستخدم ذلك في الإنتاج بدون مراجعة أمنية).
 10. **أدوات من جذر المستودع:**  

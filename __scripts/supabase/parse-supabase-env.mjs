@@ -1,12 +1,25 @@
 /**
  * Shared helpers for supabase/docker/.env — used by sync / seed / verify scripts.
  */
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 import path from 'node:path'
 import { homedir } from 'node:os'
 
+/**
+ * Prefer ./supabase/docker (داخل مستودع BookCars بعد npm run supabase:clone-docker)،
+ * وإلا ~/supabase/docker للتوافق مع الإعداد القديم.
+ */
 export function defaultSupabaseDockerDir() {
-  return path.join(homedir(), 'supabase', 'docker')
+  const cwd = process.cwd()
+  const inRepo = path.join(cwd, 'supabase', 'docker')
+  const legacy = path.join(homedir(), 'supabase', 'docker')
+  try {
+    if (fs.existsSync(path.join(inRepo, '.env'))) return inRepo
+    if (fs.existsSync(path.join(legacy, '.env'))) return legacy
+  } catch {
+    /* ignore */
+  }
+  return inRepo
 }
 
 export function parseEnv(text) {

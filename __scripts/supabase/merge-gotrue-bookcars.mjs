@@ -9,7 +9,11 @@
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { homedir } from 'node:os'
+import { fileURLToPath } from 'node:url'
+import { defaultSupabaseDockerDir, parseEnv } from './parse-supabase-env.mjs'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bookcarsRoot = path.resolve(__dirname, '..', '..')
 
 const BOOKCARS_SITE = 'http://localhost:13080'
 const KEYS = {
@@ -19,7 +23,7 @@ const KEYS = {
 
 function parseArgs() {
   const args = process.argv.slice(2)
-  let dir = path.join(homedir(), 'supabase', 'docker')
+  let dir = defaultSupabaseDockerDir()
   let fixKongLf = args.includes('--fix-kong-lf')
   for (let i = 0; i < args.length; i += 1) {
     if (args[i] === '--dir' && args[i + 1]) {
@@ -28,6 +32,17 @@ function parseArgs() {
     }
   }
   return { dir, fixKongLf }
+}
+
+async function loadBookcarsStackFragment() {
+  const p = path.join(bookcarsRoot, 'infra', 'supabase-bookcars-stack.fragment.env')
+  try {
+    const raw = await fs.readFile(p, 'utf8')
+    return parseEnv(raw)
+  } catch {
+    console.warn(`[supabase] No stack fragment (optional):\n  ${p}`)
+    return {}
+  }
 }
 
 /** Kong entrypoint must be LF-only inside the Linux container; CRLF breaks shebang execution. */
@@ -105,11 +120,16 @@ async function main() {
     await fs.writeFile(envPath, content, 'utf8')
   }
 
-  const next = upsertEnvLines(content, KEYS)
+  const stack = await loadBookcarsStackFragment()
+  const merged = { ...stack, ...KEYS }
+  const next = upsertEnvLines(content, merged)
   await fs.writeFile(envPath, next, 'utf8')
-  console.log(`Updated GoTrue-related keys in:\n  ${envPath}`)
+  console.log(`Updated BookCars + GoTrue keys in:\n  ${envPath}`)
   console.log(`  SITE_URL=${KEYS.SITE_URL}`)
   console.log(`  ADDITIONAL_REDIRECT_URLS=${KEYS.ADDITIONAL_REDIRECT_URLS}`)
+  if (Object.keys(stack).length) {
+    console.log(`  (+ ${Object.keys(stack).length} keys from infra/supabase-bookcars-stack.fragment.env)`)
+  }
 
   if (fixKongLf || process.platform === 'win32') {
     await normalizeKongEntrypointLf(dir)

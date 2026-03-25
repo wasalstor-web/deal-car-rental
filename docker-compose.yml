@@ -1,5 +1,5 @@
 # Default credentials are for local dev only. For production, use strong secrets and restrict ports.
-# Self-hosted Supabase (Kong; المنفذ الافتراضي غالبًا 8000) + BookCars — راجع docs/DEPLOYMENT.md و infra/
+# Self-hosted Supabase (Kong؛ مع المكدس الموحّد غالبًا 8010 — infra/supabase-bookcars-stack.fragment.env) + BookCars — راجع docs/DEPLOYMENT.md و supabase/README.md
 #
 # — عزل عن مشاريع Docker أخرى على نفس السيرفر: شبكة bridge مخصّصة لكل مشروع Compose (بادئة اسم المشروع).
 # — تعارض المنافذ على المضيف: عرّف BOOKCARS_HOST_PORT_* في البيئة أو ملف .env بجانب هذا الملف.
