@@ -1,0 +1,83 @@
+# يُدمج أخيراً مع المكدس الموحّد من جذر المستودع (انظر README + npm run docker:up:hostinger).
+# المتطلبات: شبكة Traefik خارجية (TRAEFIK_DOCKER_NETWORK)، وملفا env:
+#   --env-file supabase/docker/.env
+#   --env-file deploy/hostinger/.env
+#
+# الملف الأول في الأمر يجب أن يكون docker-compose.yml في الجذر حتى تُحل مسارات supabase/docker بشكل صحيح.
+
+networks:
+  traefik_edge:
+    external: true
+    name: ${TRAEFIK_DOCKER_NETWORK:-traefik}
+
+services:
+  mongo:
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+
+  bc-backend:
+    env_file:
+      - path: ./deploy/hostinger/secrets/backend.env
+        required: true
+    environment:
+      BC_DB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD}@mongo:27017/bookcars?authSource=admin&appName=bookcars
+      BC_FRONTEND_HOST: https://${WEB_FQDN}/
+      BC_ADMIN_HOST: https://${ADMIN_FQDN}/
+      BC_AUTH_COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+    networks:
+      bookcars_isolated: {}
+      traefik_edge: {}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule=Host(`${API_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=4002
+
+  bc-admin:
+    build:
+      context: .
+      dockerfile: ./deploy/hostinger/docker/admin.Dockerfile
+      args:
+        API_PUBLIC_URL: https://${API_FQDN}
+    networks:
+      bookcars_isolated: {}
+      traefik_edge: {}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.rule=Host(`${ADMIN_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-admin.loadbalancer.server.port=3001
+
+  bc-frontend:
+    build:
+      context: .
+      dockerfile: ./deploy/hostinger/docker/frontend.Dockerfile
+      args:
+        API_PUBLIC_URL: https://${API_FQDN}
+        SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
+        SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    networks:
+      bookcars_isolated: {}
+      traefik_edge: {}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${WEB_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-web.loadbalancer.server.port=80
+
+  kong:
+    networks:
+      default:
+        aliases:
+          - api-gw
+      traefik_edge: {}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.rule=Host(`${SUPABASE_FQDN}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.tls.certresolver=letsencrypt
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-kong.loadbalancer.server.port=8000

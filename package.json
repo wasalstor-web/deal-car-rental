@@ -44,6 +44,8 @@
     "docker:up:bookcars-only": "docker compose -p bookcars -f docker-compose.yml up -d --build",
     "docker:up:supabase": "node __scripts/docker-compose-unified.mjs up -d --build",
     "docker:down:supabase": "node __scripts/docker-compose-unified.mjs down",
+    "docker:up:hostinger": "node __scripts/hostinger-compose-unified.mjs up -d --build",
+    "docker:down:hostinger": "node __scripts/hostinger-compose-unified.mjs down",
     "mobile:android": "npm run android --prefix mobile",
     "supabase:clone-docker": "node __scripts/supabase/clone-official-docker.mjs",
     "supabase:merge-gotrue": "node __scripts/supabase/merge-gotrue-bookcars.mjs",
@@ -60,3 +62,6 @@
     "p-limit": "^6.2.0"
   }
 }
+
+
+

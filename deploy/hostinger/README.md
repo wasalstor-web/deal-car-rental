@@ -22,6 +22,8 @@ Point three hostnames (or your own domain) to the VPS public IP, for example:
 
 Use the same values in `.env` as `WEB_FQDN`, `API_FQDN`, `ADMIN_FQDN`.
 
+Add a **fourth** hostname for **Supabase (Kong)** and set `SUPABASE_FQDN` in `deploy/hostinger/.env` (must match `SUPABASE_PUBLIC_URL` / `API_EXTERNAL_URL` in `supabase/docker/.env`, e.g. `https://<SUPABASE_FQDN>`).
+
 ## 2. Config files on the server
 
 ```bash
@@ -36,9 +38,34 @@ Set strong `MONGO_ROOT_PASSWORD`, `BC_COOKIE_SECRET`, `BC_JWT_SECRET`, `BC_SUPAB
 
 `COOKIE_DOMAIN` should be a parent domain shared by the three hosts (e.g. `.srv1125123.hstgr.cloud`).
 
+For **self-hosted Supabase** on the same VPS, you also need `supabase/docker/.env` (run `npm run supabase:clone-docker` once). Set `SUPABASE_PUBLIC_URL` and `API_EXTERNAL_URL` to `https://<SUPABASE_FQDN>`, and copy `ANON_KEY` into `SUPABASE_ANON_KEY` in `deploy/hostinger/.env`. `BC_SUPABASE_JWT_SECRET` in `secrets/backend.env` must match Supabase `JWT_SECRET`.
+
+Before merge on the server, point GoTrue at the public web URL:
+
+```bash
+export BOOKCARS_SITE_URL="https://<WEB_FQDN>"
+npm run supabase:merge-gotrue
+```
+
 ## 3. Build and run
 
+### Option A — **Recommended:** BookCars + Supabase + Traefik (unified)
+
+Requires an **external Docker network** used by Traefik on this VPS (see `TRAEFIK_DOCKER_NETWORK` in `.env.example`, often `traefik`). The **first** compose file must stay the repo-root `docker-compose.yml` so Supabase volume paths resolve correctly.
+
 From the **repository root**:
+
+```bash
+npm run docker:up:hostinger
+```
+
+Equivalent to merging: `docker-compose.yml` + `supabase/docker/docker-compose.yml` + `infra/docker-compose.supabase-bookcars.override.yml` + `deploy/hostinger/docker-compose.traefik-overlay.yml`, with `--env-file supabase/docker/.env` and `--env-file deploy/hostinger/.env`, and project name `COMPOSE_PROJECT_NAME` from `deploy/hostinger/.env`.
+
+Shell shortcut: `deploy/hostinger/up-unified.sh`.
+
+### Option B — BookCars only (no self-hosted Supabase)
+
+Use Supabase Cloud or another URL: fill `SUPABASE_PUBLIC_URL` / `SUPABASE_ANON_KEY` in `deploy/hostinger/.env`, then from the **repository root**:
 
 ```bash
 docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
@@ -50,13 +77,15 @@ When the panel **clones the full repository**, it currently uses the **root** `d
 
 For **Traefik + HTTPS** on the VPS, prefer SSH from the repo root:
 
-`docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`
+- **With self-hosted Supabase:** `npm run docker:up:hostinger` (see option A above).
+- **Without Supabase stack:** `docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`
 
-and keep `deploy/hostinger/secrets/backend.env` on the server (see above).
+Keep `deploy/hostinger/secrets/backend.env` on the server (see above).
 
 The default branch is **`main`**, not `master`.
 
 ## 5. After deploy
 
 - Open `https://<WEB_FQDN>` (frontend), `https://<ADMIN_FQDN>` (admin), API at `https://<API_FQDN>`.
-- If you change public URLs or Supabase keys, rebuild `bc-frontend` / `bc-admin` so Vite picks up build-time env.
+- If you use self-hosted Supabase: check `https://<SUPABASE_FQDN>/auth/v1/health` (via Kong).
+- If you change public URLs or Supabase keys, rebuild (`npm run docker:up:hostinger` with `--build`, or rebuild the affected services) so Vite picks up build-time env.

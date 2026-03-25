@@ -1,4 +1,5 @@
-# BookCars — Hostinger VPS + Traefik (same pattern as wordpress-o8cs on srv1125123).
+# BookCars — Hostinger VPS + Traefik (BookCars فقط، بدون حاويات Supabase على نفس الملف).
+# للمكدس الموحّد (BookCars + Supabase ذاتي): من جذر المستودع — npm run docker:up:hostinger (راجع README).
 # From repo root: docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
 # Copy deploy/hostinger/.env.example → deploy/hostinger/.env and deploy/hostinger/secrets/backend.env.example → secrets/backend.env
 #

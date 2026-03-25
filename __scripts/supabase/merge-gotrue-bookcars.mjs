@@ -15,7 +15,7 @@ import { defaultSupabaseDockerDir, parseEnv } from './parse-supabase-env.mjs'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bookcarsRoot = path.resolve(__dirname, '..', '..')
 
-const BOOKCARS_SITE = 'http://localhost:13080'
+const BOOKCARS_SITE = (process.env.BOOKCARS_SITE_URL || '').trim() || 'http://localhost:13080'
 const KEYS = {
   SITE_URL: BOOKCARS_SITE,
   ADDITIONAL_REDIRECT_URLS: BOOKCARS_SITE,
@@ -163,3 +163,4 @@ main().catch((e) => {
   console.error(e)
   process.exit(1)
 })
+
