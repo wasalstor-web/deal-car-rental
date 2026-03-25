@@ -80,3 +80,17 @@ If hPanel deploy uses **root** `docker-compose.yml`, use a unique directory name
 - After changing public URLs or Supabase build-time vars: rebuild (`npm run docker:up:hostinger` with `--build` or rebuild affected services).
 
 Default git branch: **`main`**.
+
+---
+
+## 7. Checklist — بدون نواقص (قبل `docker:up:hostinger`)
+
+- [ ] DNS: أربعة سجلات تشير إلى IP الـ VPS (`WEB_FQDN`, `API_FQDN`, `ADMIN_FQDN`, `SUPABASE_FQDN`).
+- [ ] `docker network ls` يحتوي شبكة Traefik الخارجية (`TRAEFIK_DOCKER_NETWORK`).
+- [ ] `deploy/hostinger/.env` منسوخ من `.env.example` ومعدّل (كلمات مرور، FQDN، `SUPABASE_*`، `COMPOSE_PROJECT_NAME` فريد).
+- [ ] `deploy/hostinger/secrets/backend.env` منسوخ من `secrets/backend.env.example` و **`BC_SUPABASE_JWT_SECRET` = `JWT_SECRET`** في `supabase/docker/.env`.
+- [ ] `supabase/docker/.env` موجود بعد `npm run supabase:clone-docker`؛ **`SUPABASE_PUBLIC_URL`** و **`API_EXTERNAL_URL`** = `https://<SUPABASE_FQDN>`؛ **`ANON_KEY`** منسوخ إلى **`SUPABASE_ANON_KEY`** في `deploy/hostinger/.env`.
+- [ ] `export BOOKCARS_SITE_URL="https://<WEB_FQDN>"` ثم **`npm run supabase:merge-gotrue`**.
+- [ ] تشغيل: **`npm run docker:up:hostinger`**.
+
+**بعد التشغيل:** `npm run docker:ps:hostinger` — سجلات: `npm run docker:logs:hostinger` (أو ألحق `-- -f` لمتابعة مباشرة، أو `-- bc-backend` لخدمة واحدة).
