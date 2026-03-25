@@ -1,9 +1,8 @@
-[![build](https://github.com/aelassas/bookcars/actions/workflows/build.yml/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/build.yml) 
-[![test](https://github.com/aelassas/bookcars/actions/workflows/test.yml/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/test.yml) 
-[![codecov](https://img.shields.io/codecov/c/github/aelassas/bookcars?label=coverage)](https://codecov.io/gh/aelassas/bookcars)
-[![loc](https://raw.githubusercontent.com/aelassas/bookcars/refs/heads/loc/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/loc.yml) 
-[![live demo](https://img.shields.io/badge/live-demo-brightgreen)](https://bookcars.dynv6.net/)
-[![docs](https://img.shields.io/badge/docs-wiki-brightgreen)](https://github.com/aelassas/bookcars/wiki)
+[![build](https://github.com/wasalstor-web/deal-car-rental/actions/workflows/build.yml/badge.svg)](https://github.com/wasalstor-web/deal-car-rental/actions/workflows/build.yml)
+[![test](https://github.com/wasalstor-web/deal-car-rental/actions/workflows/test.yml/badge.svg)](https://github.com/wasalstor-web/deal-car-rental/actions/workflows/test.yml)
+[![MIT license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![BookCars wiki](https://img.shields.io/badge/docs-BookCars_wiki-blue)](https://github.com/aelassas/bookcars/wiki)
+[![upstream demo](https://img.shields.io/badge/demo-upstream_bookcars-yellowgreen)](https://bookcars.dynv6.net/)
 
 <!--
 [![docs](https://img.shields.io/badge/docs-wiki-brightgreen)](https://github.com/aelassas/bookcars/wiki)
@@ -30,7 +29,7 @@ https://github.com/user-attachments/assets/01afc5ec-3c0a-47b9-a4e1-3b8888b2a695
 **Deal Car Rental** is this deployment’s product name; the codebase extends the open-source **BookCars** stack below.
 
 - **GitHub:** [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental)
-- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
+- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) · [نشر سريع / deploy](docs/DEPLOYMENT.md)
 - Upstream BookCars: `git remote add upstream https://github.com/aelassas/bookcars.git` then `git fetch upstream` (remote `upstream` may already exist)
 
 ## BookCars (upstream)

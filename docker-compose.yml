@@ -1,10 +1,11 @@
+# Default credentials are for local dev only. For production, use strong secrets and restrict ports.
 services:
   mongo:
     image: mongo:latest
     command: mongod --quiet --logpath /dev/null
     restart: always
     environment:
-      # Provide your credentials here
+      # Local dev — change for production
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
