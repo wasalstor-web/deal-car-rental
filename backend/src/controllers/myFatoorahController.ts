@@ -43,7 +43,7 @@ export const createPayment = async (req: Request, res: Response) => {
       return
     }
 
-    const callbackBase = helper.joinURL(env.FRONTEND_HOST, 'checkout-myfatoorah')
+    const callbackBase = helper.joinURL(env.MYFATOORAH_CALLBACK_BASE_URL, 'checkout-myfatoorah')
     const callBackUrl = `${callbackBase}?bookingId=${encodeURIComponent(bookingId)}`
     const errorUrl = `${callbackBase}?bookingId=${encodeURIComponent(bookingId)}&failed=1`
 

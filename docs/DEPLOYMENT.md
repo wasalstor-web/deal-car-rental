@@ -12,8 +12,8 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 
 1. **Backend** `BC_MYFATOORAH_API_URL` (e.g. test `https://apitest.myfatoorah.com`, Saudi prod `https://api-sa.myfatoorah.com`), `BC_MYFATOORAH_API_KEY` (Bearer token from portal), `BC_MYFATOORAH_PAYMENT_METHOD_ID` (from [InitiatePayment](https://docs.myfatoorah.com/docs/initiate-payment) / your account — often `1` or `2`).
 2. **Frontend** `VITE_BC_PAYMENT_GATEWAY=MyFatoorah` (or `MYFATOORAH`).
-3. **Callback**: `BC_FRONTEND_HOST` must be a **public HTTPS** URL (MyFatoorah rejects localhost). Return path: `/checkout-myfatoorah?bookingId=…` — MyFatoorah appends `paymentId`.
-4. **Currency**: `DisplayCurrencyIso` must be supported for your portal country (e.g. SAR, KWD, AED).
+3. **Callback URLs**: MyFatoorah rejects `localhost` in `CallBackUrl` / `ErrorUrl`. Either set `BC_FRONTEND_HOST` to your public site (e.g. `https://rental.example.com/`), **or** keep localhost for the app but set **`BC_MYFATOORAH_CALLBACK_PUBLIC_URL`** to a public HTTPS base only for payment return (e.g. production domain or a tunnel like `https://xxxx.ngrok-free.app`). Path added automatically: `/checkout-myfatoorah?bookingId=…` — MyFatoorah appends `paymentId`.
+4. **Currency**: Set `VITE_BC_BASE_CURRENCY` (e.g. `SAR`) to match what MyFatoorah expects for `DisplayCurrencyIso` on your account.
 
 ## Production — minimum
 
