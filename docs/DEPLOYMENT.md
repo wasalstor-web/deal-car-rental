@@ -121,7 +121,7 @@ Use **one** public frontend URL for both the SPA and payment return — **`BC_FR
 
 ## Hostinger VPS (Docker + Traefik)
 
-For a **Hostinger VPS** that already runs **Traefik** with Let’s Encrypt (same label pattern as other sites on the server), follow **[deploy/hostinger/README.md](../deploy/hostinger/README.md)**. **BookCars only** (e.g. Supabase Cloud): `deploy/hostinger/docker-compose.yml` with `deploy/hostinger/.env` and `secrets/backend.env`. **BookCars + self-hosted Supabase + Traefik** (unified stack from repo root): `npm run docker:up:hostinger` — see README option A.
+**المرجع الكامل (ملفات تعدّلها + أوامر بالترتيب):** [deploy/hostinger/README.md](../deploy/hostinger/README.md). ملخص: عدّل `deploy/hostinger/.env`, `deploy/hostinger/secrets/backend.env`, `supabase/docker/.env`؛ ثم `npm run supabase:merge-gotrue` (مع `BOOKCARS_SITE_URL`)؛ ثم **`npm run docker:up:hostinger`** للمكدس الموحّد أو **`docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`** لـ BookCars فقط مع Supabase سحابي.
 
 ## Production — minimum
 

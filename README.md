@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/01afc5ec-3c0a-47b9-a4e1-3b8888b2a695
 **Deal Car Rental** is this deployment’s product name; the codebase extends the open-source **BookCars** stack below.
 
 - **GitHub:** [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental)
-- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) · [نشر سريع / deploy](docs/DEPLOYMENT.md) · [Supabase + BookCars (مرجع شامل)](docs/SUPABASE_EVERYTHING.md)  
+- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) · [نشر سريع / deploy](docs/DEPLOYMENT.md) · **VPS Hostinger (ملفات تعدّلها + أوامر):** [deploy/hostinger/README.md](deploy/hostinger/README.md) · [Supabase + BookCars (مرجع شامل)](docs/SUPABASE_EVERYTHING.md)  
 - **Local Docker ports:** Web **13080**, API **4002**, Admin **3001**, Mongo **27018**; self-hosted Supabase (Kong) غالبًا **`http://localhost:8000`** لكن المنفذ قابل للتغيير — يجب أن يطابق **`SUPABASE_PUBLIC_URL`** و`VITE_BC_SUPABASE_URL` / `BC_SUPABASE_URL`. راجع `docs/DEPLOYMENT.md` و`infra/supabase-self-host.defaults.env`. أوامر مساعدة: `supabase:merge-gotrue`، `supabase:sync-bookcars`، `supabase:verify-local`، `supabase:seed-user`، `supabase:apply-docker` (انظر `package.json`).
 - Upstream BookCars: `git remote add upstream https://github.com/aelassas/bookcars.git` then `git fetch upstream` (remote `upstream` may already exist)
 
