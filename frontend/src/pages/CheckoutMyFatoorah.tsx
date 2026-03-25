@@ -11,6 +11,22 @@ import Error from '@/components/Error'
 
 import '@/assets/css/checkout-session.css'
 
+const sleep = (ms: number) => new Promise<void>((resolve) => {
+  setTimeout(resolve, ms)
+})
+
+/**
+ * MyFatoorah may append paymentId with varying casing; collect case-insensitively.
+ */
+const readPaymentId = (params: URLSearchParams): string => {
+  for (const [key, value] of params.entries()) {
+    if (key.toLowerCase() === 'paymentid' && value) {
+      return value
+    }
+  }
+  return ''
+}
+
 /**
  * Return URL after MyFatoorah hosted payment (CallBackUrl / ErrorUrl).
  * Expects: ?bookingId=...&paymentId=... on success; ?bookingId=...&failed=1 on cancel/error from gateway.
@@ -18,7 +34,7 @@ import '@/assets/css/checkout-session.css'
 const CheckoutMyFatoorah = () => {
   const [searchParams] = useSearchParams()
   const bookingId = searchParams.get('bookingId') || ''
-  const paymentId = searchParams.get('paymentId') || searchParams.get('PaymentId') || ''
+  const paymentId = readPaymentId(searchParams)
   const failed = searchParams.get('failed')
 
   const [loading, setLoading] = useState(true)
@@ -27,6 +43,8 @@ const CheckoutMyFatoorah = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     const run = async () => {
       if (!bookingId) {
         setNoMatch(true)
@@ -38,23 +56,51 @@ const CheckoutMyFatoorah = () => {
         setLoading(false)
         return
       }
+
+      const maxClientAttempts = 4
+      const clientDelayMs = 2000
+
       try {
         setLoading(true)
-        const status = await MyFatoorahService.checkPayment(bookingId, paymentId)
-        setNoMatch(status === 204)
-        setSuccess(status === 200)
-        if (status !== 200 && status !== 204) {
+        for (let attempt = 0; attempt < maxClientAttempts && !cancelled; attempt++) {
+          const { status, body } = await MyFatoorahService.checkPayment(bookingId, paymentId)
+          if (status === 200) {
+            setNoMatch(false)
+            setSuccess(true)
+            setErrorMessage(null)
+            break
+          }
+          if (status === 204) {
+            setNoMatch(true)
+            setSuccess(false)
+            break
+          }
+          const stillProcessing = (body || '').toLowerCase().includes('still processing')
+          if (status === 400 && stillProcessing && attempt < maxClientAttempts - 1) {
+            await sleep(clientDelayMs)
+            continue
+          }
+          setNoMatch(false)
+          setSuccess(false)
           setErrorMessage(strings.PAYMENT_FAILED)
+          break
         }
       } catch {
-        setSuccess(false)
-        setErrorMessage(strings.PAYMENT_FAILED)
+        if (!cancelled) {
+          setSuccess(false)
+          setErrorMessage(strings.PAYMENT_FAILED)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
     run()
+    return () => {
+      cancelled = true
+    }
   }, [bookingId, paymentId, failed])
 
   return (

@@ -411,18 +411,6 @@ export const MYFATOORAH_API_KEY = __env__('BC_MYFATOORAH_API_KEY', false, '')
  */
 export const MYFATOORAH_PAYMENT_METHOD_ID = Number.parseInt(__env__('BC_MYFATOORAH_PAYMENT_METHOD_ID', false, '1'), 10)
 
-const myFatoorahCallbackPublicUrl = __env__('BC_MYFATOORAH_CALLBACK_PUBLIC_URL', false, '')
-
-/**
- * Base URL (scheme + host, no path) used only for MyFatoorah CallBackUrl / ErrorUrl.
- * When unset, falls back to {@link FRONTEND_HOST}. Set this to a public HTTPS URL when the app runs on localhost or behind a private hostname.
- *
- * @type {string}
- */
-export const MYFATOORAH_CALLBACK_BASE_URL = myFatoorahCallbackPublicUrl
-  ? helper.trimEnd(myFatoorahCallbackPublicUrl, '/')
-  : helper.trimEnd(FRONTEND_HOST, '/')
-
 /**
  * Booking expiration in seconds.
  * Bookings created from checkout with Stripe are temporary and are automatically deleted if the payment checkout session expires.

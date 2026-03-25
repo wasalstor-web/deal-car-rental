@@ -12,6 +12,10 @@ import * as myfatoorah from '../payment/myfatoorah'
 
 const normalizeStatus = (s: string | undefined) => (s || '').trim()
 
+const sleep = (ms: number) => new Promise<void>((resolve) => {
+  setTimeout(resolve, ms)
+})
+
 /**
  * Create MyFatoorah invoice and return hosted payment URL (redirect customer).
  */
@@ -43,7 +47,11 @@ export const createPayment = async (req: Request, res: Response) => {
       return
     }
 
-    const callbackBase = helper.joinURL(env.MYFATOORAH_CALLBACK_BASE_URL, 'checkout-myfatoorah')
+    if (/localhost|127\.0\.0\.1/i.test(env.FRONTEND_HOST)) {
+      logger.info('[myfatoorah.createPayment] BC_FRONTEND_HOST is local; MyFatoorah CallBackUrl usually must be a public HTTPS URL. Point BC_FRONTEND_HOST at the same origin users open in the browser (e.g. your domain or an ngrok URL).')
+    }
+
+    const callbackBase = helper.joinURL(env.FRONTEND_HOST, 'checkout-myfatoorah')
     const callBackUrl = `${callbackBase}?bookingId=${encodeURIComponent(bookingId)}`
     const errorUrl = `${callbackBase}?bookingId=${encodeURIComponent(bookingId)}&failed=1`
 
@@ -95,18 +103,45 @@ export const checkPayment = async (req: Request, res: Response) => {
       return
     }
 
-    let statusData: myfatoorah.PaymentStatusData
-    try {
-      statusData = await myfatoorah.getPaymentStatus(paymentId, 'PaymentId')
-    } catch (err) {
-      logger.error(`[myfatoorah.checkPayment] GetPaymentStatus error: ${paymentId}`, err)
-      res.status(400).send(i18n.t('ERROR') + err)
-      return
+    let statusData: myfatoorah.PaymentStatusData | undefined
+    const maxAttempts = 5
+    const delayMs = 1200
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        statusData = await myfatoorah.getPaymentStatus(paymentId, 'PaymentId')
+      } catch (err) {
+        logger.error(`[myfatoorah.checkPayment] GetPaymentStatus error: ${paymentId} (attempt ${attempt + 1})`, err)
+        if (attempt === maxAttempts - 1) {
+          res.status(400).send(i18n.t('ERROR') + err)
+          return
+        }
+        await sleep(delayMs)
+        continue
+      }
+
+      if (statusData.CustomerReference && statusData.CustomerReference !== bookingId) {
+        logger.error(`[myfatoorah.checkPayment] CustomerReference mismatch for booking ${bookingId}`)
+        res.status(400).send('Invalid payment reference')
+        return
+      }
+
+      const invoiceStatus = normalizeStatus(statusData.InvoiceStatus)
+      if (invoiceStatus === 'Paid') {
+        break
+      }
+      if (invoiceStatus === 'Canceled') {
+        await booking.deleteOne()
+        res.status(400).send('Canceled')
+        return
+      }
+      if (attempt < maxAttempts - 1) {
+        await sleep(delayMs)
+      }
     }
 
-    if (statusData.CustomerReference && statusData.CustomerReference !== bookingId) {
-      logger.error(`[myfatoorah.checkPayment] CustomerReference mismatch for booking ${bookingId}`)
-      res.status(400).send('Invalid payment reference')
+    if (!statusData) {
+      res.status(400).send(i18n.t('ERROR'))
       return
     }
 
@@ -162,6 +197,11 @@ export const checkPayment = async (req: Request, res: Response) => {
       }
 
       res.sendStatus(200)
+      return
+    }
+
+    if (invoiceStatus === 'Pending') {
+      res.status(400).send('Payment still processing — refresh this page in a moment.')
       return
     }
 

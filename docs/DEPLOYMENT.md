@@ -10,10 +10,12 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 
 ## MyFatoorah (hosted payment)
 
-1. **Backend** `BC_MYFATOORAH_API_URL` (e.g. test `https://apitest.myfatoorah.com`, Saudi prod `https://api-sa.myfatoorah.com`), `BC_MYFATOORAH_API_KEY` (Bearer token from portal), `BC_MYFATOORAH_PAYMENT_METHOD_ID` (from [InitiatePayment](https://docs.myfatoorah.com/docs/initiate-payment) / your account — often `1` or `2`).
+Use **one** public frontend URL for both the SPA and payment return — **`BC_FRONTEND_HOST`** (must match the origin visitors use in the browser so CORS and email links stay consistent).
+
+1. **Backend** `BC_MYFATOORAH_API_URL` (e.g. test `https://apitest.myfatoorah.com`, Saudi prod `https://api-sa.myfatoorah.com`), `BC_MYFATOORAH_API_KEY`, `BC_MYFATOORAH_PAYMENT_METHOD_ID` (from [InitiatePayment](https://docs.myfatoorah.com/docs/initiate-payment) / portal — often `1` or `2`).
 2. **Frontend** `VITE_BC_PAYMENT_GATEWAY=MyFatoorah` (or `MYFATOORAH`).
-3. **Callback URLs**: MyFatoorah rejects `localhost` in `CallBackUrl` / `ErrorUrl`. Either set `BC_FRONTEND_HOST` to your public site (e.g. `https://rental.example.com/`), **or** keep localhost for the app but set **`BC_MYFATOORAH_CALLBACK_PUBLIC_URL`** to a public HTTPS base only for payment return (e.g. production domain or a tunnel like `https://xxxx.ngrok-free.app`). Path added automatically: `/checkout-myfatoorah?bookingId=…` — MyFatoorah appends `paymentId`.
-4. **Currency**: Set `VITE_BC_BASE_CURRENCY` (e.g. `SAR`) to match what MyFatoorah expects for `DisplayCurrencyIso` on your account.
+3. **`BC_FRONTEND_HOST`**: Set to the **same HTTPS URL** customers use to open the site (e.g. `https://rental.example.com/`). MyFatoorah rejects `localhost` in return URLs — for local testing, expose the frontend on a public tunnel (ngrok, etc.) and set `BC_FRONTEND_HOST` to that HTTPS base. Return path: `/checkout-myfatoorah?bookingId=…` (MyFatoorah appends `paymentId`).
+4. **Currency**: `VITE_BC_BASE_CURRENCY` (e.g. `SAR`) should match `DisplayCurrencyIso` for your MyFatoorah country account.
 
 ## Production — minimum
 
