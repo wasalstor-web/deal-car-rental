@@ -32,7 +32,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule=Host(`${API_FQDN}`)
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.entrypoints=websecure
-      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       - traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=4002
 
   bc-admin:
@@ -48,7 +48,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.rule=Host(`${ADMIN_FQDN}`)
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.entrypoints=websecure
-      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-admin.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       - traefik.http.services.${COMPOSE_PROJECT_NAME}-admin.loadbalancer.server.port=3001
 
   bc-frontend:
@@ -66,7 +66,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${WEB_FQDN}`)
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=websecure
-      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       - traefik.http.services.${COMPOSE_PROJECT_NAME}-web.loadbalancer.server.port=80
 
   kong:
@@ -79,5 +79,5 @@ services:
       - traefik.enable=true
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.rule=Host(`${SUPABASE_FQDN}`)
       - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.entrypoints=websecure
-      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-kong.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       - traefik.http.services.${COMPOSE_PROJECT_NAME}-kong.loadbalancer.server.port=8000

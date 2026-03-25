@@ -22,7 +22,7 @@ Point three hostnames (or your own domain) to the VPS public IP, for example:
 
 Use the same values in `.env` as `WEB_FQDN`, `API_FQDN`, `ADMIN_FQDN`.
 
-Add a **fourth** hostname for **Supabase (Kong)** and set `SUPABASE_FQDN` in `deploy/hostinger/.env` (must match `SUPABASE_PUBLIC_URL` / `API_EXTERNAL_URL` in `supabase/docker/.env`, e.g. `https://<SUPABASE_FQDN>`).
+Add a **fourth** hostname for **Supabase (Kong)** and set `SUPABASE_FQDN` in `deploy/hostinger/.env` to the **host only** (no `https://`, no path). It must match the host in `SUPABASE_PUBLIC_URL` here and in `supabase/docker/.env` (`SUPABASE_PUBLIC_URL` / `API_EXTERNAL_URL` as `https://<SUPABASE_FQDN>`).
 
 ## 2. Config files on the server
 

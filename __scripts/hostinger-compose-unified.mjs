@@ -45,9 +45,32 @@ function readProjectName() {
   return String(p).trim()
 }
 
+/** فشل مبكراً عند `up` إن واجهة الواجهة الأمامية تُبنى بدون Supabase عام */
+function validateHostingerEnvForComposeUp(passThrough) {
+  const wantsUp = passThrough.some((a) => a === "up")
+  if (!wantsUp) return
+  const env = parseEnv(fs.readFileSync(hostingerEnv, "utf8"))
+  const pub = String(env.SUPABASE_PUBLIC_URL ?? "").trim()
+  const anon = String(env.SUPABASE_ANON_KEY ?? "").trim()
+  const fqdn = String(env.SUPABASE_FQDN ?? "").trim()
+  if (!pub) {
+    console.error("[hostinger] set SUPABASE_PUBLIC_URL in deploy/hostinger/.env (e.g. https://<SUPABASE_FQDN>)")
+    process.exit(1)
+  }
+  if (!anon) {
+    console.error("[hostinger] set SUPABASE_ANON_KEY (copy ANON_KEY from supabase/docker/.env)")
+    process.exit(1)
+  }
+  if (!fqdn) {
+    console.error("[hostinger] set SUPABASE_FQDN for Kong Traefik router (hostname only, no scheme)")
+    process.exit(1)
+  }
+}
+
 const passThrough = process.argv.slice(2)
 ensureSupabaseDocker()
 const project = readProjectName()
+validateHostingerEnvForComposeUp(passThrough)
 const args = ["compose", "-p", project, "--env-file", "supabase/docker/.env", "--env-file", "deploy/hostinger/.env", ...FILES, ...passThrough]
 console.log("[hostinger] docker", args.join(" "))
 const r = spawnSync("docker", args, { cwd: bookcarsRoot, stdio: "inherit", env: process.env, shell: process.platform === "win32" })
