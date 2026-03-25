@@ -10,7 +10,7 @@ COPY ./packages /bookcars/packages
 
 RUN set -eux; \
   if [ -z "${API_PUBLIC_URL}" ]; then echo "ERROR: API_PUBLIC_URL build-arg is required" >&2; exit 1; fi; \
-  sed -e "s|http://localhost:4002|${API_PUBLIC_URL}|g" .env.docker > .env
+  sed -e "s|http://localhost:4002|${API_PUBLIC_URL}|g" .env.docker.example > .env
 
 RUN npm install --force
 RUN npm run build

@@ -34,13 +34,17 @@ From the **repository root**:
 docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
 ```
 
-## 4. Hostinger API (optional)
+## 4. Hostinger “Docker Compose” from GitHub
 
-`VPS_createNewProjectV1` can pull compose from a **raw** URL, for example:
+When the panel **clones the full repository**, it currently uses the **root** `docker-compose.yml` (not this folder’s file). That is fine after the repo change to build from **`.env.docker.example`** and to load backend env from the example plus optional `.env.docker`.
 
-`https://raw.githubusercontent.com/wasalstor-web/deal-car-rental/main/deploy/hostinger/docker-compose.yml`
+For **Traefik + HTTPS** on the VPS, prefer SSH from the repo root:
 
-You must still create `.env` and `secrets/backend.env` on the VM (or inject equivalent variables via your deployment process). The default BookCars GitHub branch is `main`, not `master`.
+`docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`
+
+and keep `deploy/hostinger/secrets/backend.env` on the server (see above).
+
+The default branch is **`main`**, not `master`.
 
 ## 5. After deploy
 

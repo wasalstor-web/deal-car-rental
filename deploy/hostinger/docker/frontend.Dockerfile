@@ -12,7 +12,7 @@ COPY ./packages /bookcars/packages
 
 RUN set -eux; \
   if [ -z "${API_PUBLIC_URL}" ]; then echo "ERROR: API_PUBLIC_URL build-arg is required" >&2; exit 1; fi; \
-  sed -e "s|http://localhost:4002|${API_PUBLIC_URL}|g" .env.docker > .env.step1; \
+  sed -e "s|http://localhost:4002|${API_PUBLIC_URL}|g" .env.docker.example > .env.step1; \
   if [ -n "${SUPABASE_URL}" ]; then \
     sed -e "s|http://localhost:8010|${SUPABASE_URL}|g" .env.step1 > .env.step2; \
   else \

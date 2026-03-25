@@ -31,7 +31,10 @@ services:
     build: 
       context: .
       dockerfile: ./backend/Dockerfile
-    env_file: ./backend/.env.docker
+    env_file:
+      - ./backend/.env.docker.example
+      - path: ./backend/.env.docker
+        required: false
     restart: always
     ports:
       - 4002:4002
