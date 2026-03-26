@@ -12,7 +12,6 @@ const SignIn = lazy(() => import('@/pages/SignIn'))
 const Activate = lazy(() => import('@/pages/Activate'))
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'))
-const SignUp = lazy(() => import('@/pages/SignUp'))
 const Suppliers = lazy(() => import('@/pages/Suppliers'))
 const Supplier = lazy(() => import('@/pages/Supplier'))
 const CreateSupplier = lazy(() => import('@/pages/CreateSupplier'))
@@ -82,7 +81,6 @@ const router = createBrowserRouter([
       { path: 'activate', element: <Activate /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
-      // { path: 'sign-up', element: <SignUp /> },
       { path: 'suppliers', element: <Suppliers /> },
       { path: 'supplier', element: <Supplier /> },
       { path: 'create-supplier', element: <CreateSupplier /> },

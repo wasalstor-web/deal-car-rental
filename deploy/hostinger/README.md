@@ -94,3 +94,55 @@ Default git branch: **`main`**.
 - [ ] تشغيل: **`npm run docker:up:hostinger`**.
 
 **بعد التشغيل:** `npm run docker:ps:hostinger` — سجلات: `npm run docker:logs:hostinger` (أو ألحق `-- -f` لمتابعة مباشرة، أو `-- bc-backend` لخدمة واحدة).
+
+---
+
+## 8. أول مرة على الـ VPS (ملخص تنفيذي)
+
+1. **DNS في Hostinger / لوحة النطاق:** أربعة سجلات **A** (أو AAAA) للنطاقات الفرعية في `.env` → نفس **IP الـ VPS**.
+2. **على السيرفر:** Docker + Docker Compose plugin + Node.js (LTS) + Git.
+3. **شبكة Traefik** (إن لم تكن موجودة):  
+   `docker network create traefik`
+4. **استنساخ المشروع** (أو رفع الملفات)، ثم من **جذر المستودع:**
+   ```bash
+   cp deploy/hostinger/.env.example deploy/hostinger/.env
+   cp deploy/hostinger/secrets/backend.env.example deploy/hostinger/secrets/backend.env
+   # عدّل الملفين + أنشئ/عدّل supabase/docker/.env (انظر الجدول في §1)
+   npm run supabase:clone-docker    # مرة واحدة إن لم يوجد supabase/docker
+   export BOOKCARS_SITE_URL="https://<WEB_FQDN>"   # نفس قيمة WEB_FQDN من .env مع https://
+   npm run supabase:merge-gotrue
+   chmod +x deploy/hostinger/update-stack.sh deploy/hostinger/up-unified.sh   # اختياري على Linux
+   npm run docker:up:hostinger
+   ```
+
+**ويندوز محلياً (تجربة الأمر فقط):** من الجذر: `powershell -File deploy/hostinger/up-unified.ps1` — يشغّل نفس `npm run docker:up:hostinger` (يحتاج Docker Desktop يعمل).
+
+> **ملاحظة:** الوكيل هنا لا يستطيع الاتصال بخادم Hostinger نيابةً عنك؛ نفّذ الأوامر أنت عبر **SSH** على الـ VPS.
+
+---
+
+## 9. تحديث المكدس بعد `git pull` (إعادة بناء كل شيء)
+
+على **السيرفر** من جذر المستودع (بعد ضبط `.env` و`secrets` مسبقاً):
+
+**الطريقة الموصى بها (سكربت واحد):**
+```bash
+npm run hostinger:update-stack
+```
+ما يفعله: `git pull --ff-only` → يضبط `BOOKCARS_SITE_URL` من `WEB_FQDN` في `deploy/hostinger/.env` → `supabase:merge-gotrue` → `docker:up:hostinger`.
+
+**يدوياً:**
+```bash
+git pull
+export BOOKCARS_SITE_URL="https://<WEB_FQDN>"
+npm run supabase:merge-gotrue
+npm run docker:up:hostinger
+```
+
+**BookCars فقط** (بدون إعادة دمج Supabase إن لم تتغير عناوينه):
+```bash
+git pull
+docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build
+```
+
+بعد التحديث: تحقق من `https://<API_FQDN>/health` أو مسار صحّة الـ API لديك، و`npm run docker:ps:hostinger`.

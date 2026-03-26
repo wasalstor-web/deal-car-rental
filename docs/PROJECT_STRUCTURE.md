@@ -31,6 +31,7 @@ Monorepo based on [BookCars](https://github.com/aelassas/bookcars). Paths below 
 | `__scripts/` | Automation (i18n, release helpers) |
 | `__services/` | Auxiliary service definitions |
 | `locales/` | Translation exports / JSON workflows (`README.txt`) |
+| `deploy/hostinger/` | Hostinger VPS + Traefik: `README.md`, `update-stack.sh`, `up-unified.sh`, `up-unified.ps1` |
 
 ## Quality & CI
 
@@ -45,6 +46,7 @@ Monorepo based on [BookCars](https://github.com/aelassas/bookcars). Paths below 
 | File | Role |
 |------|------|
 | `README.md` | Project overview & quick links |
+| `docs/LAUNCH_READINESS.md` | Pre-production / go-live checklist (bilingual) |
 | `LICENSE` | MIT (see file for upstream attribution) |
 | `package.json` | Root scripts (`i18n:*`, `lint`, etc.) |
 

@@ -7,6 +7,9 @@ import User from '../src/models/User'
 import * as authHelper from '../src/utils/authHelper'
 
 export default async function globalSetup() {
+  if (process.env.SKIP_TEST_GLOBAL_SETUP === '1') {
+    return
+  }
   try {
     //
     // create admin from env if not found

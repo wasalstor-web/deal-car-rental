@@ -48,6 +48,7 @@
     "docker:down:hostinger": "node __scripts/hostinger-compose-unified.mjs down",
     "docker:ps:hostinger": "node __scripts/hostinger-compose-unified.mjs ps -a",
     "docker:logs:hostinger": "node __scripts/hostinger-compose-unified.mjs logs --tail=200",
+    "hostinger:update-stack": "sh deploy/hostinger/update-stack.sh",
     "mobile:android": "npm run android --prefix mobile",
     "supabase:clone-docker": "node __scripts/supabase/clone-official-docker.mjs",
     "supabase:merge-gotrue": "node __scripts/supabase/merge-gotrue-bookcars.mjs",
@@ -55,7 +56,11 @@
     "supabase:sync-bookcars": "node __scripts/supabase/sync-bookcars-from-supabase.mjs",
     "supabase:verify-local": "node __scripts/supabase/verify-supabase-local.mjs",
     "supabase:seed-user": "node __scripts/supabase/seed-local-auth-user.mjs",
-    "supabase:apply-docker": "node __scripts/supabase/apply-supabase-to-docker.mjs"
+    "supabase:apply-docker": "node __scripts/supabase/apply-supabase-to-docker.mjs",
+    "backend:test:unit": "npm run test:unit --prefix backend",
+    "verify:all": "npm run i18n:verify && npm run i18n:verify-mobile && npm run lint && npm run backend:test:unit",
+    "verify:build": "npm run build --prefix backend && npm run build --prefix frontend && npm run build --prefix admin && npm run ts:check --prefix mobile",
+    "verify:complete": "npm run verify:all && npm run build --prefix frontend && npm run build --prefix admin && npm run ts:check --prefix mobile"
   },
   "devDependencies": {
     "chalk": "^5.4.1",

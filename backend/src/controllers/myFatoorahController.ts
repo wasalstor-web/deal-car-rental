@@ -57,6 +57,11 @@ export const createPayment = async (req: Request, res: Response) => {
 
     const lang = (language || 'en').toLowerCase().startsWith('ar') ? 'ar' : 'en'
 
+    const itemName =
+      typeof description === 'string' && description.trim().length > 0
+        ? `${name} — ${description.trim()}`.slice(0, 500)
+        : name
+
     const data = await myfatoorah.executePayment({
       PaymentMethodId: env.MYFATOORAH_PAYMENT_METHOD_ID,
       InvoiceValue: amount,
@@ -69,7 +74,7 @@ export const createPayment = async (req: Request, res: Response) => {
       CustomerReference: bookingId,
       InvoiceItems: [
         {
-          ItemName: name,
+          ItemName: itemName,
           Quantity: 1,
           UnitPrice: amount,
         },

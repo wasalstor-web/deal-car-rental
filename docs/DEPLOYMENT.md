@@ -1,5 +1,7 @@
 # Deployment checklist — النشر
 
+**Go-live gate (product, security, QA):** [LAUNCH_READINESS.md](LAUNCH_READINESS.md).
+
 Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki — Docker](https://github.com/aelassas/bookcars/wiki/Installing-(Docker)).
 
 **مرجع واحد لـ Supabase الذاتي + BookCars (منافذ، env، أوامر npm، تدفقات، استكشاف أخطاء Windows):** [SUPABASE_EVERYTHING.md](SUPABASE_EVERYTHING.md).
@@ -121,7 +123,11 @@ Use **one** public frontend URL for both the SPA and payment return — **`BC_FR
 
 ## Hostinger VPS (Docker + Traefik)
 
-**المرجع الكامل (ملفات تعدّلها + أوامر بالترتيب):** [deploy/hostinger/README.md](../deploy/hostinger/README.md). ملخص: عدّل `deploy/hostinger/.env`, `deploy/hostinger/secrets/backend.env`, `supabase/docker/.env`؛ ثم `npm run supabase:merge-gotrue` (مع `BOOKCARS_SITE_URL`)؛ ثم **`npm run docker:up:hostinger`** للمكدس الموحّد أو **`docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`** لـ BookCars فقط مع Supabase سحابي.
+**المرجع الكامل (أول نشر + تحديث بعد git pull):** [deploy/hostinger/README.md](../deploy/hostinger/README.md) (§8 أول مرة، §9 تحديث المكدس).
+
+ملخص: عدّل `deploy/hostinger/.env`, `deploy/hostinger/secrets/backend.env`, `supabase/docker/.env`؛ ثم `npm run supabase:merge-gotrue` (مع `BOOKCARS_SITE_URL`)؛ ثم **`npm run docker:up:hostinger`** للمكدس الموحّد أو **`docker compose -f deploy/hostinger/docker-compose.yml --env-file deploy/hostinger/.env up -d --build`** لـ BookCars فقط مع Supabase سحابي.
+
+**تحديث السيرفر بعد دفع الكود:** على الـ VPS من جذر المستودع: **`npm run hostinger:update-stack`** (أو اتبع الأوامر اليدوية في نفس README §9).
 
 ## Production — minimum
 

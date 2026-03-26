@@ -5,6 +5,7 @@ jest.unstable_mockModule('../src/config/env.config', () => ({
     APPLE_CLIENT_ID_WEB: 'apple-client-id-web',
     APPLE_CLIENT_ID_MOBILE: 'apple-client-id-mobile',
     GOOGLE_CLIENT_ID: 'google-client-id',
+    GOOGLE_MOBILE_CLIENT_ID: 'google-mobile-client-id',
     FACEBOOK_APP_ID: 'fb-app-id',
     FACEBOOK_APP_SECRET: 'fb-secret',
 }))
@@ -20,6 +21,20 @@ jest.unstable_mockModule('axios', () => ({
   default: {
     get: jest.fn(),
   },
+}))
+
+/** Mock return type for `OAuth2Client#verifyIdToken` ticket */
+type GoogleIdTokenTicket = { getPayload: () => { email?: string } | undefined }
+
+const mockVerifyGoogleIdToken = jest.fn() as jest.MockedFunction<
+  (options: { idToken: string; audience: string[] }) => Promise<GoogleIdTokenTicket>
+>
+
+jest.unstable_mockModule('google-auth-library', () => ({
+  __esModule: true,
+  OAuth2Client: jest.fn().mockImplementation(() => ({
+    verifyIdToken: mockVerifyGoogleIdToken,
+  })),
 }))
 
 // 2. DYNAMIC IMPORTS - ORDER MATTERS
@@ -67,31 +82,42 @@ describe('Social Auth Helper (ESM)', () => {
     })
   })
 
-  // TODO
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('verifyGoogleToken', () => {
-    it('should return true for valid Google response', async () => {
-      mockedAxios.get.mockResolvedValue({
-        data: {
-          email: mockEmail,
-          aud: 'google-client-id',
-        },
+  describe('verifyGoogleToken', () => {
+    it('should return true when verifyIdToken payload email matches', async () => {
+      mockVerifyGoogleIdToken.mockResolvedValue({
+        getPayload: () => ({ email: mockEmail }),
       })
 
       const result = await authHelper.verifyGoogleToken(mockToken, mockEmail)
       expect(result).toBe(true)
+      expect(mockVerifyGoogleIdToken).toHaveBeenCalledWith({
+        idToken: mockToken,
+        audience: ['google-client-id', 'google-mobile-client-id'],
+      })
     })
 
-    it('should return false if audience is wrong', async () => {
-      mockedAxios.get.mockResolvedValue({
-        data: {
-          email: mockEmail,
-          aud: 'wrong-id',
-        },
+    it('should return false if payload email does not match', async () => {
+      mockVerifyGoogleIdToken.mockResolvedValue({
+        getPayload: () => ({ email: 'other@example.com' }),
       })
 
       const result = await authHelper.verifyGoogleToken(mockToken, mockEmail)
       expect(result).toBe(false)
+    })
+
+    it('should return false if getPayload returns undefined', async () => {
+      mockVerifyGoogleIdToken.mockResolvedValue({
+        getPayload: () => undefined,
+      })
+
+      const result = await authHelper.verifyGoogleToken(mockToken, mockEmail)
+      expect(result).toBe(false)
+    })
+
+    it('should reject if verifyIdToken throws (invalid token / audience)', async () => {
+      mockVerifyGoogleIdToken.mockRejectedValue(new Error('Wrong recipient'))
+
+      await expect(authHelper.verifyGoogleToken(mockToken, mockEmail)).rejects.toThrow('Wrong recipient')
     })
   })
 

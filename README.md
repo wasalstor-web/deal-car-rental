@@ -29,8 +29,9 @@ https://github.com/user-attachments/assets/01afc5ec-3c0a-47b9-a4e1-3b8888b2a695
 **Deal Car Rental** is this deployment’s product name; the codebase extends the open-source **BookCars** stack below.
 
 - **GitHub:** [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental)
-- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) · [نشر سريع / deploy](docs/DEPLOYMENT.md) · **VPS Hostinger (ملفات تعدّلها + أوامر):** [deploy/hostinger/README.md](deploy/hostinger/README.md) · [Supabase + BookCars (مرجع شامل)](docs/SUPABASE_EVERYTHING.md)  
+- Repo layout: [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) · [نشر سريع / deploy](docs/DEPLOYMENT.md) · **[قبل التدشين — Launch checklist](docs/LAUNCH_READINESS.md)** · **Hostinger VPS:** [deploy/hostinger/README.md](deploy/hostinger/README.md) (§8 أول نشر، §9 تحديث بعد `git pull` + `npm run hostinger:update-stack`) · [Supabase + BookCars (مرجع شامل)](docs/SUPABASE_EVERYTHING.md)  
 - **Local Docker ports:** Web **13080**, API **4002**, Admin **3001**, Mongo **27018**; self-hosted Supabase (Kong) غالبًا **`http://localhost:8000`** لكن المنفذ قابل للتغيير — يجب أن يطابق **`SUPABASE_PUBLIC_URL`** و`VITE_BC_SUPABASE_URL` / `BC_SUPABASE_URL`. راجع `docs/DEPLOYMENT.md` و`infra/supabase-self-host.defaults.env`. أوامر مساعدة: `supabase:merge-gotrue`، `supabase:sync-bookcars`، `supabase:verify-local`، `supabase:seed-user`، `supabase:apply-docker` (انظر `package.json`).
+- **فحص قبل الدمج أو النشر:** من جذر المستودع: `npm run verify:all` (ترجمات + ESLint + وحدة الخلفية بدون Mongo). **تأكيد كامل مع بناء الواجهات:** `npm run verify:complete` (ما سبق + `vite build` للويب والأدمن + TypeScript للموبايل؛ الـ backend يُبنى ضمن اختبار الوحدة). **بناء كل الحزم فقط:** `npm run verify:build`.
 - Upstream BookCars: `git remote add upstream https://github.com/aelassas/bookcars.git` then `git fetch upstream` (remote `upstream` may already exist)
 
 ## BookCars (upstream)
@@ -90,7 +91,7 @@ Customers can register through the web frontend or mobile app, search for availa
 
 * Customer management
 * Multiple login options: Google, Facebook, Apple, Email
-* Multiple language support: English, French, Spanish, Arabic (web admin and backend; see `locales/README.txt` for the Arabic JSON workflow)
+* Multiple language support: English, French, Spanish, Arabic (web, admin, mobile app, backend; see `locales/README.txt` for web/admin JSON workflow and root `package.json` for `i18n:verify-mobile` / `i18n:export-mobile`)
 * Multiple currencies support
 * Multiple pagination styles: classic (next/previous), infinite scroll
 * Push notifications

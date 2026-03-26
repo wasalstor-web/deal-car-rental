@@ -13,6 +13,7 @@
     "setup": "npm run build && node dist/src/setup/setup.js",
     "reset": "npm run build && node dist/src/setup/reset.js",
     "test": "rimraf coverage && npm run build && cross-env NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage --no-cache",
+    "test:unit": "npm run build && cross-env NODE_OPTIONS=\"--experimental-vm-modules\" SKIP_TEST_GLOBAL_SETUP=1 jest --no-cache --coverage=false --testPathPatterns=authHelper",
     "lint": "eslint . --cache --cache-location .eslintcache",
     "ncu": "ncu -u -x eslint",
     "script:db": "npm run build && node dist/scripts/db.js"
