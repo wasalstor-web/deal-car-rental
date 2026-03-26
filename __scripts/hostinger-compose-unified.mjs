@@ -4,6 +4,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { parseEnv } from "./supabase/parse-supabase-env.mjs"
+import { runComposeWithOptionalKongRetry } from "./compose-kong-retry.mjs"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bookcarsRoot = path.resolve(__dirname, "..")
@@ -67,15 +68,31 @@ function validateHostingerEnvForComposeUp(passThrough) {
   }
 }
 
-const passThrough = process.argv.slice(2)
-ensureSupabaseDocker()
-const project = readProjectName()
-validateHostingerEnvForComposeUp(passThrough)
-const args = ["compose", "-p", project, "--env-file", "supabase/docker/.env", "--env-file", "deploy/hostinger/.env", ...FILES, ...passThrough]
-console.log("[hostinger] docker", args.join(" "))
-const r = spawnSync("docker", args, { cwd: bookcarsRoot, stdio: "inherit", env: process.env, shell: process.platform === "win32" })
-if (r.error) {
-  console.error("[hostinger]", r.error.message)
-  process.exit(1)
+function runDockerCompose(project, passThrough) {
+  const args = ["compose", "-p", project, "--env-file", "supabase/docker/.env", "--env-file", "deploy/hostinger/.env", ...FILES, ...passThrough]
+  console.log("[hostinger] docker", args.join(" "))
+  return spawnSync("docker", args, { cwd: bookcarsRoot, stdio: "inherit", env: process.env, shell: process.platform === "win32" })
 }
-process.exit(r.status ?? 0)
+
+async function main() {
+  const passThrough = process.argv.slice(2)
+  ensureSupabaseDocker()
+  const project = readProjectName()
+  validateHostingerEnvForComposeUp(passThrough)
+  const { r, spawnError } = await runComposeWithOptionalKongRetry({
+    bookcarsRoot,
+    passThrough,
+    logPrefix: "[hostinger]",
+    runCompose: () => runDockerCompose(project, passThrough),
+  })
+  if (spawnError) {
+    console.error("[hostinger]", spawnError.message)
+    process.exit(1)
+  }
+  process.exit(r.status ?? 0)
+}
+
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

@@ -7,11 +7,15 @@
  *   node __scripts/docker-compose-unified.mjs up -d --build
  *   node __scripts/docker-compose-unified.mjs --profile devtools up -d --build
  *   node __scripts/docker-compose-unified.mjs down
+ *
+ * عند `up -d`: إن فشل التشغيل أو بقي Kong في حالة created (تأخر analytics/studio)،
+ * ننتظر ثم نعيد `up -d` مرة واحدة — انظر `compose-kong-retry.mjs`.
  */
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { runComposeWithOptionalKongRetry } from './compose-kong-retry.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bookcarsRoot = path.resolve(__dirname, '..')
@@ -48,21 +52,36 @@ function ensureSupabaseDocker() {
   }
 }
 
-function main() {
+function runCompose(passThrough) {
+  return spawnSync(
+    'docker',
+    ['compose', '-p', PROJECT, '--env-file', ENV_FILE, ...FILES, ...passThrough],
+    {
+      cwd: bookcarsRoot,
+      stdio: 'inherit',
+      env: process.env,
+      shell: process.platform === 'win32',
+    },
+  )
+}
+
+async function main() {
   const passThrough = process.argv.slice(2)
   ensureSupabaseDocker()
-  const args = ['compose', '-p', PROJECT, '--env-file', ENV_FILE, ...FILES, ...passThrough]
-  const r = spawnSync('docker', args, {
-    cwd: bookcarsRoot,
-    stdio: 'inherit',
-    env: process.env,
-    shell: process.platform === 'win32',
+  const { r, spawnError } = await runComposeWithOptionalKongRetry({
+    bookcarsRoot,
+    passThrough,
+    logPrefix: '[docker-unified]',
+    runCompose: () => runCompose(passThrough),
   })
-  if (r.error) {
-    console.error('[docker-unified] docker فشل:', r.error.message)
+  if (spawnError) {
+    console.error('[docker-unified] docker فشل:', spawnError.message)
     process.exit(1)
   }
   process.exit(r.status ?? 0)
 }
 
-main()
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

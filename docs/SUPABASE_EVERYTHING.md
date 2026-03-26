@@ -68,11 +68,11 @@
 | الأمر | الوظيفة |
 |--------|---------|
 | `npm run supabase:clone-docker` | يستنسخ [Supabase docker الرسمي](https://github.com/supabase/supabase/tree/master/docker) إلى **`supabase/docker/`** (مستبعد من Git) ثم يشغّل دمج BookCars + LF |
-| `npm run docker:up` | المكدس الموحّد (يستنسخ `supabase/docker` عند الحاجة): `docker compose -p bookcars` + الملفان |
+| `npm run docker:up` | المكدس الموحّد (يستنسخ `supabase/docker` عند الحاجة): `docker compose -p bookcars` + الملفان؛ مع **`up -d`** إن فشل أول تشغيل أو بقي **Kong** بحالة `created` (تأخر analytics/studio)، ينتظر السكربت **15 ثانية** ثم يعيد **`up -d`** مرة واحدة |
 | `npm run docker:down` | إيقاف المكدس الموحّد |
 | `npm run docker:up:bookcars-only` | BookCars فقط بدون Supabase |
 | `npm run docker:up:supabase` / `docker:down:supabase` | نفس `docker:up` / `docker:down` (توافق مع الوثائق السابقة) |
-| `npm run docker:up:hostinger` | على VPS مع Traefik: المكدس الموحّد (BookCars + Supabase) + تسميات التوجيه؛ يتطلب `deploy/hostinger/.env` و`secrets/backend.env` و`supabase/docker/.env` — التفاصيل في [deploy/hostinger/README.md](../deploy/hostinger/README.md) |
+| `npm run docker:up:hostinger` | على VPS مع Traefik: المكدس الموحّد (BookCars + Supabase) + تسميات التوجيه؛ يتطلب `deploy/hostinger/.env` و`secrets/backend.env` و`supabase/docker/.env` — التفاصيل في [deploy/hostinger/README.md](../deploy/hostinger/README.md)؛ نفس **إعادة `up -d`** بعد 15s عند فشل أول محاولة أو Kong `created` (مثل `docker:up`) |
 | `npm run docker:down:hostinger` | إيقاف المكدس أعلاه |
 | `npm run docker:ps:hostinger` | `docker compose ps -a` لنفس الملفات والمشروع |
 | `npm run docker:logs:hostinger` | `logs --tail=200` (ألحق `-- -f` أو `-- اسم_الخدمة`) |
@@ -130,6 +130,7 @@ sequenceDiagram
 2. يدويًا مختصر: `supabase:verify-local` → `supabase:sync-bookcars` → `docker compose restart bc-backend` → إن تغيّر `VITE_*`: `docker compose build bc-frontend && docker compose up -d bc-frontend`.
 3. بعد تغيير إعدادات GoTrue فقط: داخل مجلد supabase docker أعد تشغيل حاوية **auth**.
 4. إن اختفت نشر منافذ Kong على المضيف: `docker compose up -d --force-recreate kong`.
+5. إن بقي **Kong** في `Created` بعد `docker:up`: أعد **`npm run docker:up`** (السكربت يعيد المحاولة تلقائياً عند الحاجة)، أو يدوياً: `docker start bookcars-supabase-kong` ثم `npm run supabase:verify-local`.
 
 ---
 
@@ -167,7 +168,9 @@ sequenceDiagram
 | الملف | الوظيفة |
 |--------|---------|
 | `__scripts/supabase/parse-supabase-env.mjs` | قراءة `supabase/docker/.env`؛ **`defaultSupabaseDockerDir()`** يفضّل `./supabase/docker` ثم `~/supabase/docker` |
-| `__scripts/docker-compose-unified.mjs` | يضمن وجود `supabase/docker` ثم `docker compose -p bookcars` بالملفين |
+| `__scripts/compose-kong-retry.mjs` | مشترك: إعادة **`up -d`** (بعد 15s) عند فشل أول محاولة أو حاوية Kong `bookcars-supabase-kong` لا تزال `created` |
+| `__scripts/docker-compose-unified.mjs` | يضمن وجود `supabase/docker` ثم `docker compose -p bookcars` بالملفين؛ يستدعي `compose-kong-retry` مع **`up -d`** |
+| `__scripts/hostinger-compose-unified.mjs` | `docker compose -p $COMPOSE_PROJECT_NAME` + ملفات Hostinger/Traefik؛ نفس منطق Kong عبر `compose-kong-retry` |
 | `__scripts/supabase/clone-official-docker.mjs` | استنساخ الرسمي إلى `supabase/docker` + دمج |
 | `__scripts/supabase/merge-gotrue-bookcars.mjs` | دمج GoTrue + منافذ المكدس + تطبيع LF |
 | `__scripts/supabase/sync-bookcars-from-supabase.mjs` | مزامنة الأسرار والعناوين إلى BookCars |
