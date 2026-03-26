@@ -24,6 +24,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Verify Docker compose helper scripts (syntax)
+      run: |
+        node --check __scripts/compose-kong-retry.mjs
+        node --check __scripts/docker-compose-unified.mjs
+        node --check __scripts/hostinger-compose-unified.mjs
+
     - name: Verify i18n locale parity (frontend/admin + mobile)
       run: |
         npm run i18n:verify
