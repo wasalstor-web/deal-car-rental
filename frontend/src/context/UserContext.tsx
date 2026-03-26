@@ -68,20 +68,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children, refreshKey
     }
   }, [exit])
 
-  // Ref to track the previous refreshKey
-  const prevRefreshKey = useRef(refreshKey)
+  /** `null` = أول تشغيل؛ يضمن checkUser عند أول mount حتى لو refreshKey === 0 */
+  const prevRefreshKey = useRef<number | null>(null)
 
   useEffect(() => {
-    // Check if refreshKey has actually changed
-    if (prevRefreshKey.current !== refreshKey) {
+    const key = refreshKey ?? 0
+    if (prevRefreshKey.current === null || prevRefreshKey.current !== key) {
       checkUser()
-      prevRefreshKey.current = refreshKey // Update the ref to the current refreshKey
-    }
-  }, [refreshKey, checkUser])
-
-  useEffect(() => {
-    if (refreshKey === undefined) {
-      checkUser()
+      prevRefreshKey.current = key
     }
   }, [refreshKey, checkUser])
 

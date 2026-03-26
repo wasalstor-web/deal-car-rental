@@ -106,14 +106,23 @@ const Home = () => {
   const onLoad = async () => {
     if (!env.HIDE_SUPPLIERS) {
       let _suppliers = await SupplierService.getAllSuppliers()
+      if (!Array.isArray(_suppliers)) {
+        _suppliers = []
+      }
       _suppliers = _suppliers.filter((supplier) => supplier.avatar && !/no-image/i.test(supplier.avatar))
       bookcarsHelper.shuffle(_suppliers)
       setSuppliers(_suppliers)
     }
 
-    const _countries = await CountryService.getCountriesWithLocations('', true, env.MIN_LOCATIONS)
+    let _countries = await CountryService.getCountriesWithLocations('', true, env.MIN_LOCATIONS)
+    if (!Array.isArray(_countries)) {
+      _countries = []
+    }
     setCountries(_countries)
-    const _locations = await LocationService.getLocationsWithPosition()
+    let _locations = await LocationService.getLocationsWithPosition()
+    if (!Array.isArray(_locations)) {
+      _locations = []
+    }
     setLocations(_locations)
 
     const observer = new IntersectionObserver(handleIntersection)
@@ -374,11 +383,11 @@ const Home = () => {
                 <ul>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(miniPricePhr, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_HOUR}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_HOUR}</span>
                   </li>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(miniPricePday, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_DAY}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_DAY}</span>
                   </li>
                 </ul>
               </div>
@@ -423,11 +432,11 @@ const Home = () => {
                 <ul>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(midiPricePhr, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_HOUR}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_HOUR}</span>
                   </li>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(midiPricePday, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_DAY}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_DAY}</span>
                   </li>
                 </ul>
               </div>
@@ -471,11 +480,11 @@ const Home = () => {
                 <ul>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(maxiPricePhr, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_HOUR}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_HOUR}</span>
                   </li>
                   <li>
                     <span className="price">{bookcarsHelper.formatPrice(maxiPricePday, commonStrings.CURRENCY, language)}</span>
-                    <span className="unit"> · {strings.PRICE_UNIT_DAY}</span>
+                    <span className="unit"> ┬╖ {strings.PRICE_UNIT_DAY}</span>
                   </li>
                 </ul>
               </div>

@@ -160,12 +160,11 @@ export const signout = async (redirect = true, redirectSignin = false) => {
   localStorage.removeItem('bc-fe-user')
   deleteAllCookies()
 
-  await axiosInstance
-    .post(
-      '/api/sign-out',
-      null,
-      { withCredentials: true }
-    )
+  try {
+    await axiosInstance.post('/api/sign-out', null, { withCredentials: true })
+  } catch {
+    /* Backend down or session already invalid — local state cleared above */
+  }
 
   if (redirect) {
     window.location.href = '/'
