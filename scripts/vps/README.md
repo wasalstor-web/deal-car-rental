@@ -20,6 +20,12 @@ cp scripts/vps/dealcar-vps.env.example scripts/vps/dealcar-vps.env
 
 After this, only processes on the server can reach host ports **27018** and **8084**; **13080**, **3001**, and **4002** stay public (until you put a reverse proxy / firewall in front).
 
+If **mongo-express** was already running with the old bind address, recreate it once:
+
+```bash
+docker compose --env-file scripts/vps/dealcar-vps.env up -d --force-recreate mongo-express
+```
+
 ## Mongo backup
 
 ```bash
