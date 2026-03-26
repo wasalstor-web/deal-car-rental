@@ -82,4 +82,25 @@ Use this as a **go-live gate**: product, infrastructure, security, and quality. 
 
 ---
 
+## Progress checkpoint — أين وصلنا (يُحدَّث يدويًا)
+
+**آخر تحديث:** 2026-03-26.
+
+| البند | الحالة |
+|--------|--------|
+| **المستودع** | `main` على [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental) — آخر دفعة معروفة: `c5455d7` (جاهزية التدشين، سكربتات VPS، QA، وثائق Hostinger). |
+| **VPS (Hostinger)** | مسار النشر: `/docker/dealcar-rental` — مكدس **جذر** `docker-compose.yml` (بدون Traefik موحّد وبدون Supabase ذاتي على نفس المكدس حتى إشعار آخر). |
+| **تحديث السيرفر بعد تغيير الكود** | من المجلد أعلاه: `./scripts/vps/update-dealcar.sh` (أو `git pull --ff-only` ثم `docker compose up -d --build`). |
+| **منافذ عامة (IP)** | واجهة **13080** → HTTP **200**؛ أدمن **3001** → **200**؛ API **4002** → **404** على `/` (طبيعي إن لم يكن هناك مسار جذر). |
+| **ما اكتمل تقريبًا** | سكربتات التحقق `verify:all` / `verify:complete` / `verify:build`؛ اختبارات وحدات `authHelper` بدون Mongo؛ توثيق النشر و Hostinger؛ سحب وبناء على VPS بعد الدفع. |
+
+### ما يبقى قبل/بعد الإنتاج «الكامل»
+
+1. **نطاق و HTTPS:** ربط دومين حقيقي، شهادة TLS (أو وكيل عكسي)، وتطابق `BC_FRONTEND_HOST` / CORS / كوكي النطاق مع الأصول العامة.
+2. **أمان البيانات:** تقييد أو إزالة تعريض **Mongo** (`27018`) و **mongo-express** (`8084`) للإنترنت؛ نسخ احتياطي مجدول.
+3. **بريد ودفع:** التأكد من `BC_SMTP_*`؛ مفاتيح **MyFatoorah** / Stripe حسب البيئة؛ عدم بقاء `localhost` في روابط الإرجاع.
+4. **مكدس Hostinger «الموحّد» (اختياري):** يتطلب `deploy/hostinger/.env` + `supabase/docker/.env` و DNS؛ على الـ VPS الحالي **لا يوجد Node** — مسار `npm run hostinger:update-stack` يحتاج تثبيت Node أو تشغيله من جهازك.
+5. **اختبارات تكامل:** `cd backend && npm test` مع Mongo قيد التشغيل (Docker محلي أو نفس المنفذ على السيرفر).
+6. **يوم التدشين:** اختبار دخان (تسجيل، بحث، حجز، دفع تجريبي، أدمن) + مراقبة السجلات وخطة تراجع.
+
 *Last aligned with repo scripts: root `package.json`, `backend/package.json`, and CI workflows `build.yml` / `test.yml`.*
