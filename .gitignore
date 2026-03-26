@@ -12,5 +12,11 @@
 deploy/hostinger/.env
 deploy/hostinger/secrets/backend.env
 
+# VPS-only compose env (copy from scripts/vps/dealcar-vps.env.example)
+scripts/vps/dealcar-vps.env
+
+# Local Mongo dumps from scripts/vps/mongo-backup.sh
+/backups/
+
 # Supabase official Docker (npm run supabase:clone-docker) — كبير ويتضمن volumes
 /supabase/docker/

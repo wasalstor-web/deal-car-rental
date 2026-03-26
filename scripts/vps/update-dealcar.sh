@@ -14,8 +14,15 @@ echo "[vps] repo: $ROOT"
 echo "[vps] git pull --ff-only …"
 git pull --ff-only
 
+ENV_FILE="$ROOT/scripts/vps/dealcar-vps.env"
+ENV_OPT=""
+if [ -f "$ENV_FILE" ]; then
+  echo "[vps] using --env-file $ENV_FILE"
+  ENV_OPT="--env-file $ENV_FILE"
+fi
+
 echo "[vps] docker compose up -d --build …"
-docker compose up -d --build
+docker compose $ENV_OPT up -d --build
 
 echo "[vps] status:"
 docker compose ps --format 'table {{.Name}}\t{{.Status}}\t{{.Ports}}'

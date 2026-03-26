@@ -88,16 +88,17 @@ Use this as a **go-live gate**: product, infrastructure, security, and quality. 
 
 | البند | الحالة |
 |--------|--------|
-| **المستودع** | `main` على [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental) — آخر دفعة معروفة: `c5455d7` (جاهزية التدشين، سكربتات VPS، QA، وثائق Hostinger). |
+| **المستودع** | `main` على [wasalstor-web/deal-car-rental](https://github.com/wasalstor-web/deal-car-rental) — تتبع آخر commit على GitHub. |
 | **VPS (Hostinger)** | مسار النشر: `/docker/dealcar-rental` — مكدس **جذر** `docker-compose.yml` (بدون Traefik موحّد وبدون Supabase ذاتي على نفس المكدس حتى إشعار آخر). |
-| **تحديث السيرفر بعد تغيير الكود** | من المجلد أعلاه: `./scripts/vps/update-dealcar.sh` (أو `git pull --ff-only` ثم `docker compose up -d --build`). |
-| **منافذ عامة (IP)** | واجهة **13080** → HTTP **200**؛ أدمن **3001** → **200**؛ API **4002** → **404** على `/` (طبيعي إن لم يكن هناك مسار جذر). |
-| **ما اكتمل تقريبًا** | سكربتات التحقق `verify:all` / `verify:complete` / `verify:build`؛ اختبارات وحدات `authHelper` بدون Mongo؛ توثيق النشر و Hostinger؛ سحب وبناء على VPS بعد الدفع. |
+| **تحديث السيرفر** | `./scripts/vps/update-dealcar.sh` — يحمّل `scripts/vps/dealcar-vps.env` إن وُجد (انظر `dealcar-vps.env.example` لربط Mongo/mongo-express بـ `127.0.0.1`). |
+| **نسخ احتياطي Mongo** | `./scripts/vps/mongo-backup.sh` → مجلد `backups/` (مُستثنى من Git). تفاصيل: [scripts/vps/README.md](../scripts/vps/README.md). |
+| **منافذ عامة (IP)** | واجهة **13080**؛ أدمن **3001**؛ API **4002**؛ بعد تفعيل `dealcar-vps.env` يجب ألا تكون **27018** و**8084** قابلة للوصول من الإنترنت. |
+| **ما اكتمل تقريبًا** | متغيرات `BOOKCARS_MONGO_BIND` / `BOOKCARS_MONGO_EXPRESS_BIND` في Compose؛ سكربت نسخ احتياطي؛ توثيق `scripts/vps/README.md`. |
 
 ### ما يبقى قبل/بعد الإنتاج «الكامل»
 
 1. **نطاق و HTTPS:** ربط دومين حقيقي، شهادة TLS (أو وكيل عكسي)، وتطابق `BC_FRONTEND_HOST` / CORS / كوكي النطاق مع الأصول العامة.
-2. **أمان البيانات:** تقييد أو إزالة تعريض **Mongo** (`27018`) و **mongo-express** (`8084`) للإنترنت؛ نسخ احتياطي مجدول.
+2. **أمان البيانات:** تفعيل `dealcar-vps.env` على الـ VPS (ربط قواعد البيانات بـ localhost)؛ جدولة `mongo-backup.sh` ونسخ الأرشيف خارج السيرفر؛ كلمات مرور Mongo أقوى من الافتراضي في الإنتاج.
 3. **بريد ودفع:** التأكد من `BC_SMTP_*`؛ مفاتيح **MyFatoorah** / Stripe حسب البيئة؛ عدم بقاء `localhost` في روابط الإرجاع.
 4. **مكدس Hostinger «الموحّد» (اختياري):** يتطلب `deploy/hostinger/.env` + `supabase/docker/.env` و DNS؛ على الـ VPS الحالي **لا يوجد Node** — مسار `npm run hostinger:update-stack` يحتاج تثبيت Node أو تشغيله من جهازك.
 5. **اختبارات تكامل:** `cd backend && npm test` مع Mongo قيد التشغيل (Docker محلي أو نفس المنفذ على السيرفر).

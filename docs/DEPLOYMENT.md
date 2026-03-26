@@ -29,7 +29,8 @@ Short reference for **Deal Car Rental**. Full upstream guide: [BookCars Wiki —
 3. **mongo-express** (اختياري): `docker compose --profile devtools up -d --build` أو `npm run docker:up:tools`.
 4. **عزل الشبكة**: الخدمات على شبكة `bookcars_isolated` — لا تختلط مع مشاريع Compose أخرى على نفس الجهاز إلا إذا ربطتها يدوياً.
 5. **تعارض المنافذ على VPS**: عرّف `BOOKCARS_HOST_PORT_*` في `.env` بجانب `docker-compose.yml` — مثال: `deploy/hostinger/ports-root-stack.env.example`.
-6. Default ports (see `docker-compose.yml`): Mongo **27018**, API **4002**, Admin **3001**, Web **13080** → nginx.
+6. **VPS عام (IP مكشوف):** اربط Mongo و mongo-express بـ **127.0.0.1** عبر `BOOKCARS_MONGO_BIND` و `BOOKCARS_MONGO_EXPRESS_BIND` أو انسخ `scripts/vps/dealcar-vps.env.example` → `dealcar-vps.env` وشغّل `scripts/vps/update-dealcar.sh` — تفاصيل: [scripts/vps/README.md](../scripts/vps/README.md).
+7. Default ports (see `docker-compose.yml`): Mongo **27018**, API **4002**, Admin **3001**, Web **13080** → nginx.
 
 ## Mobile — Android مرتبط بنفس الـ API (Docker)
 

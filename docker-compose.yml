@@ -23,7 +23,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-      - ${BOOKCARS_HOST_PORT_MONGO:-27018}:27017
+      # Set BOOKCARS_MONGO_BIND=127.0.0.1 on production VPS (see scripts/vps/dealcar-vps.env.example).
+      - ${BOOKCARS_MONGO_BIND:-0.0.0.0}:${BOOKCARS_HOST_PORT_MONGO:-27018}:27017
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -36,7 +37,7 @@ services:
     networks:
       - bookcars_isolated
     ports:
-      - ${BOOKCARS_HOST_PORT_MONGO_EXPRESS:-8084}:8081
+      - ${BOOKCARS_MONGO_EXPRESS_BIND:-0.0.0.0}:${BOOKCARS_HOST_PORT_MONGO_EXPRESS:-8084}:8081
     environment:
       ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
       ME_CONFIG_BASICAUTH_USERNAME: admin
